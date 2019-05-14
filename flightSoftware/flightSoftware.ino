@@ -110,7 +110,20 @@ void runState0(){
 }
 
 void runState1(){
-  Serial.println("1");
+  TC = NUMBER_OF_TRIES;
+  
+  while(TC > 0){
+    // take measurements
+    // handle telemetry
+    if(altitude <= ALTITUDE_CHECKPOINT_STATE1 ){ //455m
+      TC--;
+    }
+  }
+
+  //burn nichrome wire
+  //save isNichromeBurned = true in EEPROM
+  
+  STATE = 2;
 }
 
 void runState2(){
