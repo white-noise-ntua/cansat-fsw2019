@@ -96,3 +96,7 @@ void runState3(){
     delay(2000);
   }
 }
+
+void readVoltage(){
+  voltage = analogRead(2);
+}
