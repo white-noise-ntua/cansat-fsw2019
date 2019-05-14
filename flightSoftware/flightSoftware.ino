@@ -100,7 +100,7 @@ void runState0(){
     }
 
     // take measurements
-    // handle telemetry
+    handleTelemetry();
 
   }
 
@@ -108,7 +108,7 @@ void runState0(){
 
   while(TC > 0){
     // take measurements
-    // handle telemetry
+    handleTelemetry();
     if(altitude >= ALTITUDE_CHECKPOINT_STATE0 ){ //500m
       TC--;
     }
@@ -122,7 +122,7 @@ void runState1(){
 
   while(TC > 0){
     // take measurements
-    // handle telemetry
+    handleTelemetry();
     if(altitude <= ALTITUDE_CHECKPOINT_STATE1 ){ //455m
       TC--;
     }
@@ -146,7 +146,7 @@ void runState2(){
 
     //gimbal response
 
-    // handle telemetry
+    handleTelemetry();
 
     if(altitude <= ALTITUDE_CHECKPOINT_STATE2 ){ //5m
       TC--;
@@ -188,8 +188,9 @@ void handleTelemetry(){
       String(bonusDirection) + "\n";
 
     Serial2.print(packet); // transmit telemetry packet
-
     lastTransmit = millis();
+    packetCount++;
+    //store packetCount in EEPROM
   }
 }
 
