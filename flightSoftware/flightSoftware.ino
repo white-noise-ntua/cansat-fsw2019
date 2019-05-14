@@ -17,6 +17,9 @@
 #define CameraServo2 22
 #define CameraServo3 23
 
+// checkpoints
+#define NUMBER_OF_TRIES 10
+#define ALTITUDE_CHECKPOINT_STATE0 500
 
 const int teamId = 4440;
 int packetCount;
@@ -37,6 +40,10 @@ imu::Vector<3> euler;
 int STATE;
 int TC;
 // BONUS DIRECTION (?)
+
+// Global Varriables for state = 0
+bool sensorsCalibrated = false;
+
 
 void setup(){
   pinMode(BuzzerPin,OUTPUT);
@@ -76,7 +83,30 @@ void loop(){
 
 
 void runState0(){
-  Serial.println("0");
+  while(!sensorsCalibrated){
+    //USE CODE FROM WIND TUNNEL TEST
+    //FOR TALKING TO XBEE
+    if(Serial2.available()){
+      // calibrate sensors
+      sensorsCalibrated = true;
+    }
+
+    // take measurements
+    // handle telemetry
+
+  }
+  
+  TC = NUMBER_OF_TRIES;
+  
+  while(TC > 0){
+    // take measurements
+    // handle telemetry
+    if(altitude >= ALTITUDE_CHECKPOINT_STATE0 ){ //500m
+      TC--;
+    }
+  }
+
+  STATE = 1;
 }
 
 void runState1(){
