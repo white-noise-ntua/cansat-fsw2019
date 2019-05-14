@@ -72,7 +72,7 @@ void setup(){
 
   lastTransmit = millis();
 
-  //find state
+  findState();
 
 }
 
@@ -139,7 +139,7 @@ void runState1(){
 }
 
 void runState2(){
-  // activate camera
+  digitalWrite(CameraPin,HIGH);
 
   TC = NUMBER_OF_TRIES;
 
@@ -161,7 +161,7 @@ void runState2(){
 }
 
 void runState3(){
-//  Activate Audio Beacon/
+//  Activate Audio Beacon
   while(73){
     digitalWrite(BuzzerPin,HIGH);
     delay(2000);
