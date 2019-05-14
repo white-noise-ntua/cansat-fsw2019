@@ -23,29 +23,33 @@
 #define ALTITUDE_CHECKPOINT_STATE1 455
 #define ALTITUDE_CHECKPOINT_STATE2 5
 
-const int teamId = 4440;
+const int teamID = 4440;
 int packetCount;
 float altitude;
 float pressure;
 float temperature;
 float voltage;
-// mission time format(?) RTC?
-// GPS Time Format
+float missionTime; // mission time format(?) RTC?
+float GPSTime; // GPS Time Format
 float latitude;
 float longitude;
 float gpsAltitude;
 int gpsSats;
 float spinRate;
 
+float pitch,roll; // Change them with the code from control
+
 imu::Vector<3> euler;
 
 int STATE;
 int TC;
-// BONUS DIRECTION (?)
+float bonusDirection; // BONUS DIRECTION (?)
 
 // Global Varriables for state = 0
 bool sensorsCalibrated = false;
 
+// Global Varriables for handleTelemetry
+unsigned long lastTransmit;
 
 void setup(){
   pinMode(BuzzerPin,OUTPUT);
@@ -61,6 +65,8 @@ void setup(){
 
   Serial2.begin(9600); // XBee
   Serial3.begin(9600); // GPS
+
+  lastTransmit = millis();
 
   //find state
 
@@ -97,9 +103,9 @@ void runState0(){
     // handle telemetry
 
   }
-  
+
   TC = NUMBER_OF_TRIES;
-  
+
   while(TC > 0){
     // take measurements
     // handle telemetry
@@ -113,7 +119,7 @@ void runState0(){
 
 void runState1(){
   TC = NUMBER_OF_TRIES;
-  
+
   while(TC > 0){
     // take measurements
     // handle telemetry
@@ -124,7 +130,7 @@ void runState1(){
 
   //burn nichrome wire
   //save isNichromeBurned = true in EEPROM
-  
+
   STATE = 2;
 }
 
@@ -132,7 +138,7 @@ void runState2(){
   // activate camera
 
   TC = NUMBER_OF_TRIES;
-  
+
   while(TC > 0){
     // take measurements
 
@@ -157,6 +163,33 @@ void runState3(){
     delay(2000);
     digitalWrite(BuzzerPin,LOW);
     delay(2000);
+  }
+}
+
+void handleTelemetry(){
+
+  if(millis() - lastTransmit >= 1000){
+    String packet =
+      String(teamID) + "," +
+      String(missionTime) + "," +
+      String(packetCount) + "," +
+      String(altitude) + "," +
+      String(pressure) + "," +
+      String(temperature) + "," +
+      String(voltage) + "," +
+      String(GPSTime) + "," +
+      String(latitude) + "," +
+      String(longitude) + "," +
+      String(gpsAltitude) + "," +
+      String(gpsSats) + "," +
+      String(pitch) + "," +
+      String(roll) + "," +
+      String(spinRate) + "," +
+      String(bonusDirection) + "\n";
+
+    Serial2.print(packet); // transmit telemetry packet
+
+    lastTransmit = millis();
   }
 }
 
