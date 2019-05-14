@@ -10,8 +10,10 @@ Serial2
 Pin 9 - RX XBee
 Pin 10 - TX XBee
 
-Pin 16 - Analogue Battery Voltage
-Pin 17 - Buzzer 
+Pin 11 - Nichrome Wire
+
+Pin 16 - Analogue Battery Voltage (A2)
+Pin 17 - Buzzer
 
 Pin 18 - I2C SDA
 Pin 19 - I2C SCL
@@ -20,4 +22,3 @@ Pin 20 - Camera
 Pin 21 - PWM Camera Servo
 Pin 22 - PWM Camera Servo
 Pin 23 - PWM Camera Servo
-
