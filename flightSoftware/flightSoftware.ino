@@ -20,6 +20,8 @@
 // checkpoints
 #define NUMBER_OF_TRIES 10
 #define ALTITUDE_CHECKPOINT_STATE0 500
+#define ALTITUDE_CHECKPOINT_STATE1 455
+#define ALTITUDE_CHECKPOINT_STATE2 5
 
 const int teamId = 4440;
 int packetCount;
@@ -127,7 +129,25 @@ void runState1(){
 }
 
 void runState2(){
-  Serial.println("2");
+  // activate camera
+
+  TC = NUMBER_OF_TRIES;
+  
+  while(TC > 0){
+    // take measurements
+
+    //control
+
+    //gimbal response
+
+    // handle telemetry
+
+    if(altitude <= ALTITUDE_CHECKPOINT_STATE2 ){ //5m
+      TC--;
+    }
+  }
+
+  STATE = 3;
 }
 
 void runState3(){
