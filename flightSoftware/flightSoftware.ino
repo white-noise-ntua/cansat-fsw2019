@@ -51,6 +51,10 @@ bool sensorsCalibrated = false;
 // Global Varriables for handleTelemetry
 unsigned long lastTransmit;
 
+// Values that will be written to EEPROM
+int prevState = -1;
+bool isNichromeBurned = false;
+
 void setup(){
   pinMode(BuzzerPin,OUTPUT);
 
@@ -163,6 +167,29 @@ void runState3(){
     delay(2000);
     digitalWrite(BuzzerPin,LOW);
     delay(2000);
+  }
+}
+
+void findState(){
+  // read from EEPROM
+  // take altitude measurements
+  // set isAltitude increasing and isAltitude constant
+  bool isAltIncreasing, isAltConstant;
+
+  if(prevState==-1){ // != 0,1,2,3
+    STATE = 0;
+  }
+  else if(isNichromeBurned){
+    STATE = 2;
+  }
+  else if(isAltIncreasing){
+    STATE = prevState;
+  }
+  else if(isAltConstant){
+    STATE = 0;
+  }
+  else{
+    STATE = 1;
   }
 }
 
