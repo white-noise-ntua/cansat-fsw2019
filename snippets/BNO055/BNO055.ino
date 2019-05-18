@@ -6,10 +6,10 @@
 Adafruit_BNO055 bno = Adafruit_BNO055();
 
 
-void setup(void)
+void setup()
 {
-  Serial.begin(9600);
-  
+  Serial1.begin(9600);
+
   /* Initialise the sensor */
   if(!bno.begin())
   {
@@ -32,7 +32,7 @@ void setup(void)
 
 void loop(void)
 {
- 
+
   imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
 
   /* Display the floating point data */
@@ -42,7 +42,7 @@ void loop(void)
   Serial.print(euler.y());
   Serial.print(" Z: ");
   Serial.print(euler.z());
-  Serial.print("\t\t");
+  Serial.println("\t\t");
 
   delay(100);
 }
