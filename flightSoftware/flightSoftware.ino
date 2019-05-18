@@ -4,6 +4,9 @@
 #include <Adafruit_GPS.h>
 #include <utility/imumaths.h>
 #include <Wire.h>
+#include <TimeLib.h>
+#include <DS1307RTC.h>
+
 
 #define BuzzerPin 17
 #define GPSSerial Serial3
@@ -65,6 +68,9 @@ uint32_t lastTransmit;
 
 // Global Varriables for GPS
 uint32_t GPStimer;
+
+// Global Varriables for RTC
+int hours,minutes,seconds;
 
 // Values that will be written to EEPROM
 int prevState = -1;
@@ -316,3 +322,20 @@ double getRPM() {
   uint32_t d = ((uint32_t)data[0] << 16) + ((uint32_t)data[1] << 8) + ((uint32_t)data[2]);
   return (double)(60.0 / (d * 0.000004));
 }
+
+// === Functions for RTC ===
+
+void readTime(){
+  tmElements_t tm;
+  RTC.read(tm);
+  hours = tm.Hour;
+  minutes = tm.Minute;
+  seconds = tm.Second;
+}
+
+int secondsElapsed(int h1,int m1,int s1,int h2, int m2, int s2){
+  return (h2-h1)*3600+(m2-m1)*60+(s2-s1);
+}
+
+
+// ======================
