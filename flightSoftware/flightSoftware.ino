@@ -1,8 +1,9 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_BNO055.h>
-#include <utility/imumaths.h>
 #include <Adafruit_GPS.h>
+#include <utility/imumaths.h>
+#include <Wire.h>
 
 #define BuzzerPin 17
 #define GPSSerial Serial3
@@ -18,6 +19,10 @@
 #define CameraServo1 21
 #define CameraServo2 22
 #define CameraServo3 23
+
+// RPM
+#define RPM_ADDR 10
+#define NUM_BYTES 3
 
 // checkpoints
 #define NUMBER_OF_TRIES 10
@@ -300,4 +305,14 @@ void readTempPress() {
 
 void readGyro(){
   euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+}
+
+double getRPM() {
+  byte data[3];
+  Wire.requestFrom(RPM_ADDR, 3);
+  for (byte i=0; i<NUM_BYTES; i++)
+    data[i] = Wire.read();
+
+  uint32_t d = ((uint32_t)data[0] << 16) + ((uint32_t)data[1] << 8) + ((uint32_t)data[2]);
+  return (double)(60.0 / (d * 0.000004));
 }
