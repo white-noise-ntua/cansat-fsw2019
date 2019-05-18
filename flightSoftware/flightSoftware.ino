@@ -44,21 +44,20 @@ float altitude;
 float pressure;
 float temperature;
 float voltage;
-float missionTime; // mission time format(?) RTC?
-String GPSTime; // GPS Time Format
+int missionTime;
+String GPSTime;
 float latitude;
 float longitude;
 float gpsAltitude;
 int gpsSats;
 double spinRate;
-
-float pitch,roll; // Change them with the code from control
+float bonusDirection;
+float pitch,roll;
 
 imu::Vector<3> euler;
 
 int STATE;
 int TC;
-float bonusDirection; // BONUS DIRECTION (?)
 
 // Global Varriables for state = 0
 bool sensorsCalibrated = false;
