@@ -25,6 +25,7 @@
 #define ALTITUDE_CHECKPOINT_STATE2 5
 
 Adafruit_GPS GPS(&GPSSerial);
+Adafruit_BMP280 bmp;
 
 const int teamID = 4440;
 int packetCount;
@@ -89,6 +90,14 @@ void setup(){
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // packet type
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_2HZ); // 2 Hz update frequency
   // delay(1000); needed for GPS?
+
+  // BMP Setup
+  bmp.begin();
+  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode.       */
+                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling    */
+                  Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
+                  Adafruit_BMP280::FILTER_X16,      /* Filtering.            */
+                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time.         */
 
   lastTransmit = millis();
 
@@ -275,3 +284,9 @@ void readGPS(){
 }
 
 // ======================
+
+void readTempPress() {
+  temperature = bmp.readTemperature();
+  pressure = bmp.readPressure();
+  altitude = bmp.readAltitude(1019.66); // give pressure at surface
+}
