@@ -76,9 +76,18 @@ void setup(){
   Serial2.begin(9600); // XBee
 
   // GPS Setup
-  GPS.begin(9600);
+
+  Serial3.begin(9600); // 9600 is the default baud rate
+  Serial1.print("$PMTK251,115200*1F");  //change gps baudrate to 115200
+  Serial1.write('\r');
+  Serial1.write('\n');
+
+  Serial1.flush();
+  Serial1.end();
+
+  GPS.begin(115200);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // packet type
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update frequency
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_10HZ); // 10 Hz update frequency
   // delay(1000); needed for GPS?
 
   lastTransmit = millis();
