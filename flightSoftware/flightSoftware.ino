@@ -1,9 +1,10 @@
-//#include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
+#include <Adafruit_GPS.h>
 
 #define BuzzerPin 17
+#define GPSSerial Serial3
 
 #define FinsServo1 3
 #define FinsServo2 4
@@ -23,6 +24,8 @@
 #define ALTITUDE_CHECKPOINT_STATE1 455
 #define ALTITUDE_CHECKPOINT_STATE2 5
 
+Adafruit_GPS GPS(&GPSSerial);
+
 const int teamID = 4440;
 int packetCount;
 float altitude;
@@ -30,7 +33,7 @@ float pressure;
 float temperature;
 float voltage;
 float missionTime; // mission time format(?) RTC?
-float GPSTime; // GPS Time Format
+String GPSTime; // GPS Time Format
 float latitude;
 float longitude;
 float gpsAltitude;
@@ -51,6 +54,9 @@ bool sensorsCalibrated = false;
 // Global Varriables for handleTelemetry
 unsigned long lastTransmit;
 
+// Global Varriables for GPS
+uint32_t GPStimer;
+
 // Values that will be written to EEPROM
 int prevState = -1;
 bool isNichromeBurned = false;
@@ -68,7 +74,12 @@ void setup(){
   pinMode(CameraPin,OUTPUT);
 
   Serial2.begin(9600); // XBee
-  Serial3.begin(9600); // GPS
+
+  // GPS Setup
+  GPS.begin(9600);
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // packet type
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update frequency
+  // delay(1000); needed for GPS?
 
   lastTransmit = millis();
 
@@ -224,3 +235,34 @@ void handleTelemetry(){
 void readVoltage(){
   voltage = analogRead(2);
 }
+
+// === GPS Functions ===
+
+double convertToDecimalDegrees(float deg){
+  double minutes = 0.0;
+  double decDeg = 0.0;
+
+  minutes = fmod((double)deg, 100.0);
+  deg = (int) (deg / 100);
+  decDeg = deg + (minutes/60);
+
+  return decDeg;
+}
+
+void readGPS(){
+  if(GPStimer - millis() >= 1000){ // read from GPS every 1 sec
+    GPStimer = millis();
+    if(GPS.newNMEAreceived()){
+      GPS.parse(GPS.lastNMEA()); // parse the new packet
+
+      // update measurements
+      latitude = convertToDecimalDegrees(GPS.latitude);
+      longitude = convertToDecimalDegrees(GPS.longitude);
+      gpsSats = GPS.satellites;
+      gpsAltitude = GPS.altitude;
+      GPSTime = String(GPS.hour) + ":" + String(GPS.minute) + ":" + String(GPS.seconds);
+    }
+  }
+}
+
+// ======================
