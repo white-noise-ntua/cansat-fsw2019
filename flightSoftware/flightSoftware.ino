@@ -52,7 +52,7 @@ float bonusDirection; // BONUS DIRECTION (?)
 bool sensorsCalibrated = false;
 
 // Global Varriables for handleTelemetry
-unsigned long lastTransmit;
+uint32_t lastTransmit;
 
 // Global Varriables for GPS
 uint32_t GPStimer;
