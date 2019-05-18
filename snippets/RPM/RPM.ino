@@ -1,5 +1,8 @@
 #include <Wire.h>
 
+#define RPM_ADDR 10
+#define NUM_BYTES 3
+
 double getRPM() {
   byte data[3];
   Wire.requestFrom(RPM_ADDR, 3);
@@ -21,6 +24,6 @@ void setup(){
 void loop(){
   if(millis() - timer >= 500){
     rpm = getRPM();
-    Serial.println("RPM: "+String(rpm));    
+    Serial.println("RPM: "+String(rpm));
   }
 }
