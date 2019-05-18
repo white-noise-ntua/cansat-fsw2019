@@ -27,6 +27,8 @@
 
 Adafruit_GPS GPS(&GPSSerial);
 Adafruit_BMP280 bmp;
+Adafruit_BNO055 bno = Adafruit_BNO055();
+
 
 const int teamID = 4440;
 int packetCount;
@@ -99,6 +101,10 @@ void setup(){
                   Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
                   Adafruit_BMP280::FILTER_X16,      /* Filtering.            */
                   Adafruit_BMP280::STANDBY_MS_500); /* Standby time.         */
+
+
+  // BNO Setup
+  bno.begin();
 
   lastTransmit = millis();
 
@@ -290,4 +296,8 @@ void readTempPress() {
   temperature = bmp.readTemperature();
   pressure = bmp.readPressure();
   altitude = bmp.readAltitude(1019.66); // give pressure at surface
+}
+
+void readGyro(){
+  euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
 }
