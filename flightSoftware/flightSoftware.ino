@@ -259,7 +259,7 @@ double convertToDecimalDegrees(float deg){
 }
 
 void readGPS(){
-  if(GPStimer - millis() >= 1000){ // read from GPS every 1 sec
+  if(millis() - GPStimer >= 1000){ // read from GPS every 1 sec
     GPStimer = millis();
     if(GPS.newNMEAreceived()){
       GPS.parse(GPS.lastNMEA()); // parse the new packet
