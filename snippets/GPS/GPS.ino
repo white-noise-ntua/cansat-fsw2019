@@ -29,7 +29,7 @@ void setup(){
 
   GPS.begin(115200);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // packet type
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_10HZ); // 10 Hz update frequency
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_2HZ); // 2 Hz update frequency
   // delay(1000); needed for GPS?
 
   sampleTimer = millis();
