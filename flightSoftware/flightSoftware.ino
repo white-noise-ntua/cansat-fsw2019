@@ -72,6 +72,9 @@ uint32_t GPStimer;
 // Global Varriables for RTC
 int hours,minutes,seconds;
 
+// Global Varriables for getMeasurements
+uint32_t lastSensitivePoll;
+
 // Values that will be written to EEPROM
 int prevState = -1;
 bool isNichromeBurned = false;
@@ -117,7 +120,7 @@ void setup(){
   // BNO Setup
   bno.begin();
 
-  lastTransmit = millis();
+  lastTransmit = lastSensitivePoll = millis(); // initialize time counters
 
   findState();
 
@@ -150,7 +153,7 @@ void runState0(){
       sensorsCalibrated = true;
     }
 
-    // take measurements
+    getMeasurements();
     handleTelemetry();
 
   }
@@ -158,7 +161,7 @@ void runState0(){
   TC = NUMBER_OF_TRIES;
 
   while(TC > 0){
-    // take measurements
+    getMeasurements();
     handleTelemetry();
     if(altitude >= ALTITUDE_CHECKPOINT_STATE0 ){ //500m
       TC--;
@@ -172,7 +175,7 @@ void runState1(){
   TC = NUMBER_OF_TRIES;
 
   while(TC > 0){
-    // take measurements
+    getMeasurements();
     handleTelemetry();
     if(altitude <= ALTITUDE_CHECKPOINT_STATE1 ){ //455m
       TC--;
@@ -191,7 +194,7 @@ void runState2(){
   TC = NUMBER_OF_TRIES;
 
   while(TC > 0){
-    // take measurements
+    getMeasurements();
 
     //control
 
@@ -339,3 +342,19 @@ int secondsElapsed(int h1,int m1,int s1,int h2, int m2, int s2){
 
 
 // ======================
+
+
+void getMeasurements(){
+  readGyro();
+  // pitch,roll = euler.(?)
+  if(millis() - lastSensitivePoll >= 500){
+    lastSensitivePoll = millis();
+    readVoltage();
+    readGPS();
+    readTempPress();
+    readRPM();
+    readTime();
+    // get startupTime from EEPROM
+    // missionTime = secondsElapsed(...startupTime,hours,minutes,seconds);
+  }
+}
