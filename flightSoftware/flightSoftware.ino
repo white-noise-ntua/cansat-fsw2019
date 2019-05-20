@@ -402,7 +402,7 @@ void inverse_fins(float M){
 
 
 void transform_coords() {
-  coords.psi = deg_to_rad(- wrap_angle(euler.x);
+  coords.psi = deg_to_rad(- wrap_angle(euler.x()));
   coords.psi_dot = (coords.psi - prev_coords.psi) / SAMPLING_PERIOD;
 }
 
