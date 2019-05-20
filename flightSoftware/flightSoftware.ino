@@ -6,6 +6,7 @@
 #include <Wire.h>
 #include <TimeLib.h>
 #include <DS1307RTC.h>
+#include <Servo.h>
 
 
 #define BuzzerPin 17
@@ -107,9 +108,10 @@ bool isNichromeBurned = false;
 void setup(){
   pinMode(BuzzerPin,OUTPUT);
 
-  pinMode(FinsServo1,OUTPUT);
-  pinMode(FinsServo2,OUTPUT);
-  pinMode(FinsServo3,OUTPUT);
+  for (int i = 0; i < 3; i++) {
+    fins[i].attach(finPins[i]);
+    fins[i].write(FINS_OFFSET[i]);
+  }
 
   pinMode(CameraServo1,OUTPUT);
   pinMode(CameraServo2,OUTPUT);
