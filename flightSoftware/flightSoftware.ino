@@ -54,10 +54,36 @@ double spinRate;
 float bonusDirection;
 float pitch,roll;
 
-imu::Vector<3> euler;
 
 int STATE;
 int TC;
+
+// Global Varriables for control
+
+long int LastMeasurement,previous;
+float moments;
+float K[2] = {0.01,0.0028}; // Kp, Kd
+// Fins configurations
+const float FINS_OFFSET[3] = {0, 0, 0};
+const float FINS_MIN[3] = {70, 70, 70};
+const float FINS_MAX[3] = {110, 110, 110};
+const int finPins[3] = {FinsServo1, FinsServo2, FinsServo3};
+const float SAMPLING_PERIOD = 0.02;
+Servo fins[3];
+
+imu::Vector<3> euler;
+
+float finPos[3];      // fin positions
+float x[2] = {0,0};  // state varriables: psi, psi_dot
+
+typedef struct coords_t {
+  float psi;
+  float psi_dot;
+
+} coordinates;
+
+coordinates coords;
+coordinates prev_coords;
 
 // Global Varriables for state = 0
 bool sensorsCalibrated = false;
