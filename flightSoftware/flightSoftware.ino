@@ -383,3 +383,34 @@ void getMeasurements(){
     // missionTime = secondsElapsed(...startupTime,hours,minutes,seconds);
   }
 }
+
+// === Functions for control ===
+
+void inverse_fins(float M){
+  finPos[0] = finPos[1] = finPos[2] = map(M, -0.06,0.06, 70, 110);
+  finPos[0] += FINS_OFFSET[0];
+  finPos[1] += FINS_OFFSET[1];
+  finPos[2] += FINS_OFFSET[2];
+}
+
+
+void transform_coords() {
+  coords.psi = deg_to_rad(- wrap_angle(euler.x);
+  coords.psi_dot = (coords.psi - prev_coords.psi) / SAMPLING_PERIOD;
+}
+
+float deg_to_rad(float deg) {
+  return PI / 180 * deg;
+}
+
+float wrap_angle(float x) {
+  if (x >= 180) {
+    return x - 360;
+  }
+  else {
+    return x;
+  }
+}
+
+
+// =============================
