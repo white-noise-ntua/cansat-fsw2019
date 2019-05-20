@@ -219,11 +219,13 @@ void runState2(){
   TC = NUMBER_OF_TRIES;
 
   while(TC > 0){
-    getMeasurements();
 
-    //control
-
-    //gimbal response
+    if(millis() - lastControlMeasurement >= SAMPLING_PERIOD * 1000){
+      lastControlMeasurement = millis();
+      getMeasurements();
+      control();
+      //gimbal response
+    }
 
     handleTelemetry();
 
@@ -339,6 +341,9 @@ void readTempPress() {
 
 void readGyro(){
   euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+  pitch = -euler.y();
+  roll = euler.z();
+  transform_coords();
 }
 
 void readRPM() {
@@ -410,6 +415,20 @@ float wrap_angle(float x) {
   else {
     return x;
   }
+}
+
+void control(){
+  x[0] = coords.psi;
+  x[1] = coords.psi_dot;
+
+  moments = K[0]*x[0]+K[1]*x[1];
+  inverse_fins(moments);
+
+  for(int j=0; j<3; j++){
+    fins[j].write(int(constrain(finPos[j], FINS_MIN[j], FINS_MAX[j])));
+  }
+
+  prev_coords = coords;
 }
 
 
