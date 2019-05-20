@@ -60,7 +60,7 @@ int TC;
 
 // Global Varriables for control
 
-long int LastMeasurement,previous;
+uint32_t lastControlMeasurement;
 float moments;
 float K[2] = {0.01,0.0028}; // Kp, Kd
 // Fins configurations
@@ -145,7 +145,7 @@ void setup(){
   // BNO Setup
   bno.begin();
 
-  lastTransmit = lastSensitivePoll = millis(); // initialize time counters
+  lastTransmit = lastSensitivePoll = lastControlMeasurement = millis(); // initialize time counters
 
   findState();
 
