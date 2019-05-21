@@ -121,6 +121,7 @@ void setup(){
 
   Serial2.begin(9600); // XBee
 
+  delay(10000);
   // GPS Setup
 
   Serial3.begin(9600); // 9600 is the default baud rate
@@ -319,6 +320,7 @@ double convertToDecimalDegrees(float deg){
 }
 
 void readGPS(){
+  GPS.read();
   if(millis() - GPStimer >= 1000){ // read from GPS every 1 sec
     GPStimer = millis();
     if(GPS.newNMEAreceived()){
@@ -379,11 +381,12 @@ int secondsElapsed(int h1,int m1,int s1,int h2, int m2, int s2){
 
 void getMeasurements(){
   readGyro();
+  readGPS();
+
   // pitch,roll = euler.(?)
   if(millis() - lastSensitivePoll >= 500){
     lastSensitivePoll = millis();
     readVoltage();
-    readGPS();
     readTempPress();
     readRPM();
     readTime();
