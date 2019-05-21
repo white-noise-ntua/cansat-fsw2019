@@ -1,3 +1,4 @@
+#include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
 
 Adafruit_BMP280 bmp; // I2C
@@ -7,7 +8,7 @@ float temperature;
 float pressure;
 
 void setup(){
-  Serial1.begin(9600); // start serial monitor
+  Serial.begin(9600); // start serial monitor
 
   if (!bmp.begin()) {
       Serial.println("Could not find a valid BMP280 sensor, check wiring!");
@@ -24,10 +25,11 @@ void setup(){
 
 void loop(){
   if(millis() - timer >= 1000){
+    timer = millis();
     temperature = bmp.readTemperature();
     pressure = bmp.readPressure();
     String packet = "Temperature: " + String(temperature) + ",  Pressure: " + String(pressure);
-    Serial1.println(packet);
+    Serial.println(packet);
 
   }
 }

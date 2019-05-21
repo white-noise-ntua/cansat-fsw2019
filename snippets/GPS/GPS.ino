@@ -1,6 +1,6 @@
 #include <Adafruit_GPS.h>
 
-#define GPSSerial Serial3
+#define GPSSerial Serial1
 
 Adafruit_GPS GPS(&GPSSerial);
 
@@ -16,10 +16,11 @@ uint32_t sampleTimer;
 void setup(){
 
   // begin serial monitor
-  Serial1.begin(9600);
+  Serial.begin(9600);
 
   // GPS Setup
-  Serial3.begin(9600); // 9600 is the default baud rate
+  delay(10000);
+  Serial1.begin(9600); // 9600 is the default baud rate
   Serial1.print("$PMTK251,115200*1F");  //change gps baudrate to 115200
   Serial1.write('\r');
   Serial1.write('\n');
@@ -30,22 +31,25 @@ void setup(){
   GPS.begin(115200);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // packet type
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_2HZ); // 2 Hz update frequency
-  // delay(1000); needed for GPS?
-
+  delay(1000); //needed for GPS?
+  Serial.println("Initialization completed!");
   sampleTimer = millis();
 }
 
 void loop(){
-  if(millis() - sampleTimer >= 1000){
+//  if(millis() - sampleTimer >= 1000)/{
     readGPS();
-    String printout = String(latitude) + "," +
-                      String(longitude) + "," +
-                      String(gpsSats) + "," +
-                      String(gpsAltitude) + "," +
-                      GPSTime + "\n";
-    Serial1.print(printout);
-    sampleTimer = millis();
-  }
+    if(millis() - sampleTimer >= 1000){
+      Serial.print("GPS IS FIX:\t"); Serial.println(GPS.fix);
+      if(GPS.fix){
+          Serial.print(latitude); Serial.print(",");
+          Serial.print(longitude); Serial.print(",");
+          Serial.print(gpsSats); Serial.print(",");
+          Serial.print(gpsAltitude); Serial.print(",");
+          Serial.println(GPSTime);
+      }
+      sampleTimer = millis();
+    }
 }
 
 double convertToDecimalDegrees(float deg){
@@ -60,8 +64,7 @@ double convertToDecimalDegrees(float deg){
 }
 
 void readGPS(){
-  if(millis() - GPStimer >= 1000){ // read from GPS every 1 sec
-    GPStimer = millis();
+    GPS.read();
     if(GPS.newNMEAreceived()){
       GPS.parse(GPS.lastNMEA()); // parse the new packet
 
@@ -72,5 +75,4 @@ void readGPS(){
       gpsAltitude = GPS.altitude;
       GPSTime = String(GPS.hour) + ":" + String(GPS.minute) + ":" + String(GPS.seconds);
     }
-  }
 }
