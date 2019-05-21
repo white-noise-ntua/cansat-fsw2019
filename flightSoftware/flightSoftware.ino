@@ -281,25 +281,23 @@ void findState(){
 void handleTelemetry(){
 
   if(millis() - lastTransmit >= 1000){
-    String packet =
-      String(teamID) + "," +
-      String(missionTime) + "," +
-      String(packetCount) + "," +
-      String(altitude) + "," +
-      String(pressure) + "," +
-      String(temperature) + "," +
-      String(voltage) + "," +
-      String(GPSTime) + "," +
-      String(latitude) + "," +
-      String(longitude) + "," +
-      String(gpsAltitude) + "," +
-      String(gpsSats) + "," +
-      String(pitch) + "," +
-      String(roll) + "," +
-      String(spinRate) + "," +
-      String(bonusDirection) + "\n";
+    Serial2.print(teamID); Serial2.print(",");
+    Serial2.print(missionTime); Serial2.print(",");
+    Serial2.print(packetCount); Serial2.print(",");
+    Serial2.print(altitude,1); Serial2.print(",");
+    Serial2.print(pressure,0); Serial2.print(",");
+    Serial2.print(temperature,0); Serial2.print(",");
+    Serial2.print(voltage,2); Serial2.print(",");
+    Serial2.print(GPSTime); Serial2.print(",");
+    Serial2.print(latitude,4); Serial2.print(",");
+    Serial2.print(longitude,4); Serial2.print(",");
+    Serial2.print(gpsAltitude,1); Serial2.print(",");
+    Serial2.print(gpsSats); Serial2.print(",");
+    Serial2.print(pitch,0); Serial2.print(",");
+    Serial2.print(roll,0); Serial2.print(",");
+    Serial2.print(spinRate,0); Serial2.print(",");
+    Serial2.println(bonusDirection,0);
 
-    Serial2.print(packet); // transmit telemetry packet
     lastTransmit = millis();
     packetCount++;
     //store packetCount in EEPROM
