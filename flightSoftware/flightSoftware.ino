@@ -7,6 +7,7 @@
 #include <TimeLib.h>
 #include <DS1307RTC.h>
 #include <Servo.h>
+#include <EEPROM.h>
 
 
 #define BuzzerPin 17
@@ -433,5 +434,46 @@ void control(){
   prev_coords = coords;
 }
 
-
 // =============================
+
+// === EEPROM functions ===
+
+void storeInt(int addr, uint32_t num){
+  // store num in EEPROM starting in address addr
+  // EEPROM cells are 1 byte, integers are 4 bytes
+
+  uint32_t byte1,byte2,byte3,byte4;
+
+  byte1 = num & 0xFF;
+  byte2 = (num>>8) & 0xFF;
+  byte3 = (num>>16) & 0xFF;
+  byte4 = (num>>24) & 0xFF;
+
+  // little endian
+  EEPROM.write(addr,byte1);
+  EEPROM.write(addr+1,byte2);
+  EEPROM.write(addr+2,byte3);
+  EEPROM.write(addr+3,byte4);
+}
+
+uint32_t readInt(int addr){
+  // read an integer stored in mem[addr..addr+3] in EEPROM
+  // using little endian
+  uint32_t result;
+  uint32_t byte1,byte2,byte3,byte4;
+
+  byte1 = (uint32_t) EEPROM.read(addr);
+  byte2 = (uint32_t) EEPROM.read(addr+1);
+  byte3 = (uint32_t) EEPROM.read(addr+2);
+  byte4 = (uint32_t) EEPROM.read(addr+3);
+
+  result = 0;
+  result = result | byte1;
+  result = result | ( (byte2<<8) & 0xFF00 );
+  result = result | ( (byte3<<16) & 0xFF0000 );
+  result = result | ( (byte4<<24) & 0xFF000000 );
+
+  return result;
+}
+
+// ========================
