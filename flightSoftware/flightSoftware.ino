@@ -101,6 +101,7 @@ int hours,minutes,seconds;
 
 // Global Varriables for getMeasurements
 uint32_t lastSensitivePoll;
+bool newDataAvailable = false;
 
 // Values that will be written to EEPROM
 int prevState = -1;
@@ -192,8 +193,9 @@ void runState0(){
   while(TC > 0){
     getMeasurements();
     handleTelemetry();
-    if(altitude >= ALTITUDE_CHECKPOINT_STATE0 ){ //500m
+    if(newDataAvailable && altitude >= ALTITUDE_CHECKPOINT_STATE0 ){ //500m
       TC--;
+      newDataAvailable = false;
     }
   }
 
@@ -206,8 +208,9 @@ void runState1(){
   while(TC > 0){
     getMeasurements();
     handleTelemetry();
-    if(altitude <= ALTITUDE_CHECKPOINT_STATE1 ){ //455m
+    if(newDataAvailable && altitude <= ALTITUDE_CHECKPOINT_STATE1 ){ //455m
       TC--;
+      newDataAvailable = false;
     }
   }
 
@@ -233,8 +236,9 @@ void runState2(){
 
     handleTelemetry();
 
-    if(altitude <= ALTITUDE_CHECKPOINT_STATE2 ){ //5m
+    if(newDataAvailable && altitude <= ALTITUDE_CHECKPOINT_STATE2 ){ //5m
       TC--;
+      newDataAvailable = false;
     }
   }
 
@@ -390,6 +394,7 @@ void getMeasurements(){
     readTempPress();
     readRPM();
     readTime();
+    newDataAvailable = true;
     // get startupTime from EEPROM
     // missionTime = secondsElapsed(...startupTime,hours,minutes,seconds);
   }
