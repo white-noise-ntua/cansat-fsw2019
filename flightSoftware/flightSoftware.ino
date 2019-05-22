@@ -73,6 +73,11 @@ float pitch,roll;
 int STATE;
 int TC;
 
+// Global Varriables for calibration
+float pitchOffset=0,rollOffset=0;
+float surfacePressure=1019.66,gpsAltitudeOffset=0;
+
+
 // Global Varriables for control
 
 uint32_t lastControlMeasurement;
@@ -189,16 +194,42 @@ void loop(){
 
 
 void runState0(){
+  sensorsCalibrated = EEPROM.read(EEPROM_ADDR_CALIBRATION);
   while(!sensorsCalibrated){
+    getMeasurements();
+    handleTelemetry();
+
     //USE CODE FROM WIND TUNNEL TEST
     //FOR TALKING TO XBEE
     if(Serial2.available()){
       // calibrate sensors
-      sensorsCalibrated = true;
-    }
+      int numberOfmeasurements = 0;
+      while(numberOfmeasurements <= 10){ // sample sensors for approx 5 seconds
+        if(newDataAvailable){
+          pitchOffset += pitch;
+          rollOffset += roll;
+          // yaw calibration is not needed
+          surfacePressure += pressure;
+          gpsAltitudeOffset += gpsAltitude;
 
-    getMeasurements();
-    handleTelemetry();
+          numberOfmeasurements++;
+          newDataAvailable = false;
+        }
+      }
+
+      pitchOffset /= numberOfmeasurements;
+      rollOffset /= numberOfmeasurements;
+      surfacePressure /= numberOfmeasurements;
+      gpsAltitudeOffset /= numberOfmeasurements;
+
+      writeFloat(EEPROM_ADDR_PITCH,pitchOffset);
+      writeFloat(EEPROM_ADDR_ROLL,rollOffset);
+      writeFloat(EEPROM_ADDR_PRESSURE,surfacePressure);
+      writeFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
+
+      sensorsCalibrated = true;
+      EEPROM.write(EEPROM_ADDR_CALIBRATION,1);
+    }
 
   }
 
@@ -350,7 +381,7 @@ void readGPS(){
       latitude = convertToDecimalDegrees(GPS.latitude);
       longitude = convertToDecimalDegrees(GPS.longitude);
       gpsSats = GPS.satellites;
-      gpsAltitude = GPS.altitude;
+      gpsAltitude = GPS.altitude - gpsAltitudeOffset;
       GPSTime = String(GPS.hour) + ":" + String(GPS.minute) + ":" + String(GPS.seconds);
     }
   }
@@ -361,13 +392,13 @@ void readGPS(){
 void readTempPress() {
   temperature = bmp.readTemperature();
   pressure = bmp.readPressure();
-  altitude = bmp.readAltitude(1019.66); // give pressure at surface
+  altitude = bmp.readAltitude(surfacePressure);
 }
 
 void readGyro(){
   euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-  pitch = -euler.y();
-  roll = euler.z();
+  pitch = -euler.y()-pitchOffset;
+  roll = euler.z()-rollOffset;
   transform_coords();
 }
 
