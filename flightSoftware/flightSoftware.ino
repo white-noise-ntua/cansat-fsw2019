@@ -444,6 +444,25 @@ void control(){
 
 // === EEPROM functions ===
 
+
+// Memory map
+// Addresses -> Value
+//
+// 10 -> prevState
+// (0,1,2,3) or 255 if the software runs for the first time
+
+// 15 -> isNichromeBurned
+// 20 -> areSensorsCalibrated
+// -- 0 for false, 1 for true
+
+
+// 25..29 -> packetCount
+// 40..44 -> pitch
+// 50..54 -> roll
+// 60..64 -> yaw
+// 70..74 -> pressure at surface
+// 80..84 -> gpsAltitude at surface
+
 void storeInt(int addr, uint32_t num){
   // store num in EEPROM starting in address addr
   // EEPROM cells are 1 byte, integers are 4 bytes
