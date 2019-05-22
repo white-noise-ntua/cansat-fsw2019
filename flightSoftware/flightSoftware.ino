@@ -17,6 +17,7 @@
 #define FinsServo2 4
 #define FinsServo3 5
 
+#define NichromeWire 11
 #define VoltageSensor 16
 // A2
 
@@ -121,6 +122,8 @@ bool isNichromeBurned = false;
 
 void setup(){
   pinMode(BuzzerPin,OUTPUT);
+  pinMode(CameraPin,OUTPUT);
+  pinMode(NichromeWire,OUTPUT);
 
   for (int i = 0; i < 3; i++) {
     fins[i].attach(finPins[i]);
@@ -130,7 +133,6 @@ void setup(){
   pinMode(CameraServo1,OUTPUT);
   pinMode(CameraServo2,OUTPUT);
   pinMode(CameraServo3,OUTPUT);
-  pinMode(CameraPin,OUTPUT);
 
   Serial2.begin(9600); // XBee
 
@@ -226,7 +228,11 @@ void runState1(){
     }
   }
 
-  //burn nichrome wire
+  digitalWrite(NichromeWire,HIGH);
+  delay(3000);
+  digitalWrite(NichromeWire,LOW);
+
+  EEPROM.write(EEPROM_ADDR_NICHROME,1);
   //save isNichromeBurned = true in EEPROM
 
   STATE = 2;
