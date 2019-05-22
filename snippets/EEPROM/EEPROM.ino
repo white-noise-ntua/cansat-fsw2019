@@ -1,10 +1,14 @@
 #include  <EEPROM.h>
 
 uint32_t i;
+float pi = 3.14159, f = 73.7373;
+float num;
 String printout;
 
 void setup(){
   Serial.begin(9600);
+
+  // Testing integers
   storeInt(0,737373);
   storeInt(42,1001001);
   storeInt(117,73);
@@ -20,6 +24,19 @@ void setup(){
   i = readInt(117);
   printout = "Read number " + String(i) + " from address " + String(117);
   Serial.println(printout);
+
+  // Testing floats
+  writeFloat(200,pi);
+  writeFloat(210,f);
+
+  readFloat(200,num);
+  Serial.print("Read number "); Serial.print(num,6);
+  Serial.print(" from address "); Serial.println(200);
+
+  readFloat(210,num);
+  Serial.print("Read number "); Serial.print(num,6);
+  Serial.print(" from address "); Serial.println(210);
+
 }
 
 void loop(){
@@ -63,4 +80,20 @@ uint32_t readInt(int addr){
   result = result | ( (byte4<<24) & 0xFF000000 );
 
   return result;
+}
+
+void writeFloat(int addr, float &num){
+  const byte* p = (const byte*)(const void*) &num;
+
+  for(int i=0;i<sizeof(num);i++){
+    EEPROM.write(addr++,*p++);
+  }
+}
+
+
+void readFloat(int addr, float &num){
+  byte* p = (byte*)(void*) &num;
+  for(int i=0;i<sizeof(num);i++){
+    *p++ = EEPROM.read(addr++);
+  }
 }
