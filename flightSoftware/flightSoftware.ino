@@ -482,4 +482,20 @@ uint32_t readInt(int addr){
   return result;
 }
 
+void writeFloat(int addr, float &num){
+  const byte* p = (const byte*)(const void*) &num;
+
+  for(int i=0;i<sizeof(num);i++){
+    EEPROM.write(addr++,*p++);
+  }
+}
+
+
+void readFloat(int addr, float &num){
+  byte* p = (byte*)(void*) &num;
+  for(int i=0;i<sizeof(num);i++){
+    *p++ = EEPROM.read(addr++);
+  }
+}
+
 // ========================
