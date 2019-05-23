@@ -157,7 +157,7 @@ uint32_t readInt(int addr){
 void writeFloat(int addr, float &num){
   const byte* p = (const byte*)(const void*) &num;
 
-  for(int i=0;i<sizeof(num);i++){
+  for(unsigned int i=0;i<sizeof(num);i++){
     EEPROM.write(addr++,*p++);
   }
 }
@@ -165,7 +165,7 @@ void writeFloat(int addr, float &num){
 
 void readFloat(int addr, float &num){
   byte* p = (byte*)(void*) &num;
-  for(int i=0;i<sizeof(num);i++){
+  for(unsigned int i=0;i<sizeof(num);i++){
     *p++ = EEPROM.read(addr++);
   }
 }
