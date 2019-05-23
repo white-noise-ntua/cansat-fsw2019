@@ -204,7 +204,7 @@ void runState0(){
     if(Serial2.available()){
       // calibrate sensors
       int numberOfmeasurements = 0;
-      while(numberOfmeasurements <= 10){ // sample sensors for approx 5 seconds
+      while(numberOfmeasurements < 10){ // sample sensors for approx 5 seconds
         if(newDataAvailable){
           pitchOffset += pitch;
           rollOffset += roll;
@@ -305,12 +305,50 @@ void runState3(){
 }
 
 void findState(){
-  // read from EEPROM
-  // take altitude measurements
-  // set isAltitude increasing and isAltitude constant
-  bool isAltIncreasing, isAltConstant;
+  prevState = EEPROM.read(EEPROM_ADDR_PREVSTATE);
+  isNichromeBurned = EEPROM.read(EEPROM_ADDR_NICHROME);
 
-  if(prevState==-1){ // != 0,1,2,3
+  // check if Altitude is increasing
+  float heightMeasurements[8];
+  bool isAltIncreasing, isAltConstant;
+  int numberOfmeasurements = 0;
+
+  while(numberOfmeasurements < 8){
+    getMeasurements();
+    if(newDataAvailable){
+      heightMeasurements[numberOfmeasurements] = altitude;
+      newDataAvailable = false;
+      numberOfmeasurements++;
+    }
+  }
+
+  int increasing = 0;
+  for(int i=1;i<8;i++){
+    if(heightMeasurements[i] > heightMeasurements[i-1] + 1){
+      increasing++;
+    }
+  }
+
+  isAltIncreasing = (increasing >= 6);
+  // 6 out of 7 are increasing, tollerant to 1 falsy measurement in 8
+
+  if(isAltIncreasing){
+    isAltConstant = false;
+  }
+  else{
+    float threshold = heightMeasurements[0];
+    int constant = 0;
+    for(int i=0;i<8;i++){
+      if((heightMeasurements[i] >= threshold-2) &&  (heightMeasurements[i] <= threshold+2)){
+        constant++;
+      }
+    }
+    isAltConstant = (constant >= 7);
+    // also tolerant to 1 falsy measurement
+  }
+
+
+  if(prevState==255){ // != 0,1,2,3
     STATE = 0;
   }
   else if(isNichromeBurned){
