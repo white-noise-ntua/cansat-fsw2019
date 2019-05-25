@@ -77,6 +77,10 @@ int TC;
 float pitchOffset=0,rollOffset=0;
 float surfacePressure=1019.66,gpsAltitudeOffset=0;
 
+// Global Varriables for 2-way communication
+char receivedChar;
+bool newDataReceived = false;
+
 
 // Global Varriables for control
 
@@ -198,10 +202,9 @@ void runState0(){
   while(!sensorsCalibrated){
     getMeasurements();
     handleTelemetry();
-
-    //USE CODE FROM WIND TUNNEL TEST
-    //FOR TALKING TO XBEE
-    if(Serial2.available()){
+    recvOneChar();
+    
+    if(newDataReceived){
       // calibrate sensors
       int numberOfmeasurements = 0;
       while(numberOfmeasurements < 10){ // sample sensors for approx 5 seconds
@@ -604,3 +607,14 @@ void readFloat(int addr, float &num){
 }
 
 // ========================
+
+
+// 2way-communication
+void recvOneChar(){
+  if (Serial2.available() > 0){
+    receivedChar = Serial.read();
+    if(receivedChar == 'C'){
+      newDataReceived = true;
+    }
+  }
+}
