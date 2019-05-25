@@ -296,11 +296,10 @@ void runState2(){
 
 void runState3(){
 //  Activate Audio Beacon
+  unsigned long duration = 2000;
   while(73){
-    digitalWrite(BuzzerPin,HIGH);
-    delay(2000);
-    digitalWrite(BuzzerPin,LOW);
-    delay(2000);
+    tone(BuzzerPin,2048,duration);
+    delay(duration);
   }
 }
 
