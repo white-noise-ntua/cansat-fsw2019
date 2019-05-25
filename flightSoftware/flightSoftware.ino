@@ -31,7 +31,7 @@
 #define NUM_BYTES 3
 
 // checkpoints
-#define NUMBER_OF_TRIES 10
+#define NUMBER_OF_TRIES 5
 #define ALTITUDE_CHECKPOINT_STATE0 500
 #define ALTITUDE_CHECKPOINT_STATE1 455
 #define ALTITUDE_CHECKPOINT_STATE2 5
@@ -203,11 +203,12 @@ void runState0(){
     getMeasurements();
     handleTelemetry();
     recvOneChar();
-    
+
     if(newDataReceived){
       // calibrate sensors
       int numberOfmeasurements = 0;
       while(numberOfmeasurements < 10){ // sample sensors for approx 5 seconds
+        getMeasurements();
         if(newDataAvailable){
           pitchOffset += pitch;
           rollOffset += roll;
