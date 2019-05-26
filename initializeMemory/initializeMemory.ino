@@ -15,7 +15,7 @@
 // 40..44 -> pitch
 // 50..54 -> roll
 // 60..64 -> yaw
-// 70..74 -> pressure at surface
+// 70..74 -> altitude offset
 // 80..84 -> gpsAltitude at surface
 
 #define EEPROM_ADDR_PREVSTATE 10
@@ -25,13 +25,12 @@
 #define EEPROM_ADDR_PITCH 40
 #define EEPROM_ADDR_ROLL 50
 #define EEPROM_ADDR_YAW 60
-#define EEPROM_ADDR_PRESSURE 70
+#define EEPROM_ADDR_ALTITUDE 70
 #define EEPROM_ADDR_GPS_ALT 80
 
 
 float zero = 0.0;
 int prevState = 255;
-float pressure = 1019.66;
 float num;
 int i;
 
@@ -62,14 +61,17 @@ void setup(){
   writeFloat(EEPROM_ADDR_YAW,zero);
 
   // writing pressure level
-  writeFloat(EEPROM_ADDR_PRESSURE,pressure);
+  writeFloat(EEPROM_ADDR_ALTITUDE,zero);
 
   // writing gps altitude
   writeFloat(EEPROM_ADDR_GPS_ALT,zero);
 
   Serial.println("OK!");
 
-  Serial.println("Checking values written...");
+}
+
+void loop(){
+Serial.println("Checking values written...");
 
   i = EEPROM.read(EEPROM_ADDR_PREVSTATE);
   if(i==prevState) Serial.println("Previous state is OK!");
@@ -99,9 +101,9 @@ void setup(){
   if(num==0.0) Serial.println("Yaw is OK!");
   else Serial.println("Error writing yaw!");
 
-  readFloat(EEPROM_ADDR_PRESSURE,num);
-  if(num==pressure) Serial.println("Surface pressure is OK!");
-  else Serial.println("Error writing surface pressure!");
+  readFloat(EEPROM_ADDR_ALTITUDE,num);
+  if(num==0.0) Serial.println("Altitude offset is OK!");
+  else Serial.println("Error writing altitude offset!");
 
   readFloat(EEPROM_ADDR_GPS_ALT,num);
   if(num==0.0) Serial.println("GPS Altitude is OK!");
@@ -109,11 +111,7 @@ void setup(){
 
   Serial.println("Checks finised! Do not forget to upload the flight software!");
 
-
-}
-
-void loop(){
-
+  delay(2000);
 }
 
 void storeInt(int addr, uint32_t num){
