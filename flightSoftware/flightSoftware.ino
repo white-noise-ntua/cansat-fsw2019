@@ -48,7 +48,7 @@
 #define EEPROM_ADDR_PITCH 40
 #define EEPROM_ADDR_ROLL 50
 #define EEPROM_ADDR_YAW 60
-#define EEPROM_ADDR_PRESSURE 70
+#define EEPROM_ADDR_ALTITUDE 70
 #define EEPROM_ADDR_GPS_ALT 80
 
 
@@ -136,6 +136,7 @@ int prevState = -1;
 bool isNichromeBurned = false;
 
 void setup(){
+  packetCount = readInt(EEPROM_ADDR_PACKET_COUNT);
   pinMode(BuzzerPin,OUTPUT);
   pinMode(CameraPin,OUTPUT);
   pinMode(NichromeWire,OUTPUT);
@@ -208,7 +209,7 @@ void runState0(){
   if(sensorsCalibrated){
     readFloat(EEPROM_ADDR_PITCH,pitchOffset);
     readFloat(EEPROM_ADDR_ROLL,rollOffset);
-    readFloat(EEPROM_ADDR_PRESSURE,altitudeOffset);
+    readFloat(EEPROM_ADDR_ALTITUDE,altitudeOffset);
     readFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
   }
   while(!sensorsCalibrated){
@@ -241,7 +242,7 @@ void runState0(){
 
       writeFloat(EEPROM_ADDR_PITCH,pitchOffset);
       writeFloat(EEPROM_ADDR_ROLL,rollOffset);
-      writeFloat(EEPROM_ADDR_PRESSURE,altitudeOffset);
+      writeFloat(EEPROM_ADDR_ALTITUDE,altitudeOffset);
       writeFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
 
       sensorsCalibrated = true;
