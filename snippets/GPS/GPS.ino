@@ -1,6 +1,6 @@
 #include <Adafruit_GPS.h>
 
-#define GPSSerial Serial1
+#define GPSSerial Serial3
 
 Adafruit_GPS GPS(&GPSSerial);
 
@@ -16,17 +16,17 @@ uint32_t sampleTimer;
 void setup(){
 
   // begin serial monitor
-  Serial.begin(9600);
-
+  Serial2.begin(115200);
+  
   // GPS Setup
-  delay(10000);
-  Serial1.begin(9600); // 9600 is the default baud rate
-  Serial1.print("$PMTK251,115200*1F");  //change gps baudrate to 115200
-  Serial1.write('\r');
-  Serial1.write('\n');
+  delay(2000);
+  GPSSerial.begin(9600); // 9600 is the default baud rate
+  GPSSerial.print("$PMTK251,115200*1F");  //change gps baudrate to 115200
+  GPSSerial.write('\r');
+  GPSSerial.write('\n');
 
-  Serial1.flush();
-  Serial1.end();
+  GPSSerial.flush();
+  GPSSerial.end();
 
   GPS.begin(115200);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // packet type
@@ -37,16 +37,15 @@ void setup(){
 }
 
 void loop(){
-//  if(millis() - sampleTimer >= 1000)/{
     readGPS();
     if(millis() - sampleTimer >= 1000){
-      Serial.print("GPS IS FIX:\t"); Serial.println(GPS.fix);
+      Serial2.print("GPS IS FIXED:\t"); Serial2.println(GPS.fix);
       if(GPS.fix){
-          Serial.print(latitude); Serial.print(",");
-          Serial.print(longitude); Serial.print(",");
-          Serial.print(gpsSats); Serial.print(",");
-          Serial.print(gpsAltitude); Serial.print(",");
-          Serial.println(GPSTime);
+          Serial2.print(latitude,4); Serial2.print(",");
+          Serial2.print(longitude,4); Serial2.print(",");
+          Serial2.print(gpsSats); Serial2.print(",");
+          Serial2.print(gpsAltitude,1); Serial2.print(",");
+          Serial2.println(GPSTime);
       }
       sampleTimer = millis();
     }
@@ -65,7 +64,7 @@ double convertToDecimalDegrees(float deg){
 
 void readGPS(){
     GPS.read();
-    if(GPS.newNMEAreceived()){
+    if(GPS.newNMEAreceived()){  
       GPS.parse(GPS.lastNMEA()); // parse the new packet
 
       // update measurements
