@@ -263,13 +263,9 @@ void runState1(){
     }
   }
 
-  // digitalWrite(NichromeWire,HIGH);
-  // delay(3000);
-  // digitalWrite(NichromeWire,LOW);
-
-  for(int i=0;i<3;i++){
-    Serial2.println("=======> IM BURNING THE NICHROME WIRE!");
-  }
+  digitalWrite(NichromeWire,HIGH);
+  delay(3000);
+  digitalWrite(NichromeWire,LOW);
 
   EEPROM.write(EEPROM_ADDR_NICHROME,1);
   //save isNichromeBurned = true in EEPROM
@@ -287,7 +283,7 @@ void runState2(){
     if(millis() - lastControlMeasurement >= SAMPLING_PERIOD * 1000){
       lastControlMeasurement = millis();
       getMeasurements();
-      //control();
+      control();
       //gimbal response
     }
 
