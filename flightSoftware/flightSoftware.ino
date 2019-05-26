@@ -17,7 +17,7 @@
 #define FinsServo2 4
 #define FinsServo3 5
 
-#define NichromeWire 11
+#define NichromeWire 6
 #define VoltageSensor 16
 // A2
 
@@ -25,6 +25,16 @@
 #define CameraServo1 21
 #define CameraServo2 22
 #define CameraServo3 23
+
+
+// Periods in milliseconds
+#define TELEMETRY_PERIOD 1000
+#define SENSITIVE_POLLING 500
+#define BNO_POLLING 20
+
+// Nichrome
+#define NICHROME_INTENSITY 30
+#define NICHROME_DURATION 2000 // milliseconds
 
 // RPM
 #define RPM_ADDR 10
@@ -44,7 +54,7 @@
 #define EEPROM_ADDR_PITCH 40
 #define EEPROM_ADDR_ROLL 50
 #define EEPROM_ADDR_YAW 60
-#define EEPROM_ADDR_PRESSURE 70
+#define EEPROM_ADDR_ALTITUDE 70
 #define EEPROM_ADDR_GPS_ALT 80
 
 
@@ -55,7 +65,7 @@ Adafruit_BNO055 bno = Adafruit_BNO055();
 
 const int teamID = 4440;
 int packetCount;
-float altitude;
+float alt;
 float pressure;
 float temperature;
 float voltage;
@@ -75,7 +85,9 @@ int TC;
 
 // Global Varriables for calibration
 float pitchOffset=0,rollOffset=0;
-float surfacePressure=1019.66,gpsAltitudeOffset=0;
+float gpsAltitudeOffset=0;
+float altitudeOffset=0;
+float surfacePressure = 1019.66;
 
 // Global Varriables for 2-way communication
 char receivedChar;
@@ -122,7 +134,7 @@ uint32_t GPStimer;
 int hours,minutes,seconds;
 
 // Global Varriables for getMeasurements
-uint32_t lastSensitivePoll;
+uint32_t lastSensitivePoll,lastSensitive2;
 bool newDataAvailable = false;
 
 // Values that will be written to EEPROM
@@ -130,6 +142,7 @@ int prevState = -1;
 bool isNichromeBurned = false;
 
 void setup(){
+  packetCount = readInt(EEPROM_ADDR_PACKET_COUNT);
   pinMode(BuzzerPin,OUTPUT);
   pinMode(CameraPin,OUTPUT);
   pinMode(NichromeWire,OUTPUT);
@@ -143,23 +156,22 @@ void setup(){
   pinMode(CameraServo2,OUTPUT);
   pinMode(CameraServo3,OUTPUT);
 
-  Serial2.begin(9600); // XBee
+  Serial2.begin(115200); // XBee
 
-  delay(10000);
+  delay(2000);
   // GPS Setup
 
   Serial3.begin(9600); // 9600 is the default baud rate
-  Serial1.print("$PMTK251,115200*1F");  //change gps baudrate to 115200
-  Serial1.write('\r');
-  Serial1.write('\n');
+  Serial3.print("$PMTK251,115200*1F");  //change gps baudrate to 115200
+  Serial3.write('\r');
+  Serial3.write('\n');
 
-  Serial1.flush();
-  Serial1.end();
+  Serial3.flush();
+  Serial3.end();
 
   GPS.begin(115200);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // packet type
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_2HZ); // 2 Hz update frequency
-  // delay(1000); needed for GPS?
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ); // 5 Hz update frequency
 
   // BMP Setup
   bmp.begin();
@@ -173,7 +185,7 @@ void setup(){
   // BNO Setup
   bno.begin();
 
-  lastTransmit = lastSensitivePoll = lastControlMeasurement = millis(); // initialize time counters
+  lastTransmit = lastSensitivePoll = lastControlMeasurement = lastSensitive2 = millis(); // initialize time counters
 
   findState();
 
@@ -199,6 +211,12 @@ void loop(){
 
 void runState0(){
   sensorsCalibrated = EEPROM.read(EEPROM_ADDR_CALIBRATION);
+  if(sensorsCalibrated){
+    readFloat(EEPROM_ADDR_PITCH,pitchOffset);
+    readFloat(EEPROM_ADDR_ROLL,rollOffset);
+    readFloat(EEPROM_ADDR_ALTITUDE,altitudeOffset);
+    readFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
+  }
   while(!sensorsCalibrated){
     getMeasurements();
     handleTelemetry();
@@ -207,13 +225,14 @@ void runState0(){
     if(newDataReceived){
       // calibrate sensors
       int numberOfmeasurements = 0;
+      float measuringAlt=0;
       while(numberOfmeasurements < 10){ // sample sensors for approx 5 seconds
         getMeasurements();
         if(newDataAvailable){
           pitchOffset += pitch;
           rollOffset += roll;
           // yaw calibration is not needed
-          surfacePressure += pressure;
+          measuringAlt += alt;
           gpsAltitudeOffset += gpsAltitude;
 
           numberOfmeasurements++;
@@ -223,12 +242,12 @@ void runState0(){
 
       pitchOffset /= numberOfmeasurements;
       rollOffset /= numberOfmeasurements;
-      surfacePressure /= numberOfmeasurements;
+      altitudeOffset = measuringAlt/numberOfmeasurements;
       gpsAltitudeOffset /= numberOfmeasurements;
 
       writeFloat(EEPROM_ADDR_PITCH,pitchOffset);
       writeFloat(EEPROM_ADDR_ROLL,rollOffset);
-      writeFloat(EEPROM_ADDR_PRESSURE,surfacePressure);
+      writeFloat(EEPROM_ADDR_ALTITUDE,altitudeOffset);
       writeFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
 
       sensorsCalibrated = true;
@@ -242,7 +261,7 @@ void runState0(){
   while(TC > 0){
     getMeasurements();
     handleTelemetry();
-    if(newDataAvailable && altitude >= ALTITUDE_CHECKPOINT_STATE0 ){ //500m
+    if(newDataAvailable && alt >= ALTITUDE_CHECKPOINT_STATE0 ){ //500m
       TC--;
       newDataAvailable = false;
     }
@@ -257,15 +276,16 @@ void runState1(){
   while(TC > 0){
     getMeasurements();
     handleTelemetry();
-    if(newDataAvailable && altitude <= ALTITUDE_CHECKPOINT_STATE1 ){ //455m
+    if(newDataAvailable && alt <= ALTITUDE_CHECKPOINT_STATE1 ){ //455m
       TC--;
       newDataAvailable = false;
     }
   }
 
-  digitalWrite(NichromeWire,HIGH);
-  delay(3000);
-  digitalWrite(NichromeWire,LOW);
+  // releasing payload
+  analogWrite(NichromeWire,NICHROME_INTENSITY);
+  delay(NICHROME_DURATION);
+  analogWrite(NichromeWire,0);
 
   EEPROM.write(EEPROM_ADDR_NICHROME,1);
   //save isNichromeBurned = true in EEPROM
@@ -280,16 +300,17 @@ void runState2(){
 
   while(TC > 0){
 
+    getMeasurements();
+
     if(millis() - lastControlMeasurement >= SAMPLING_PERIOD * 1000){
       lastControlMeasurement = millis();
-      getMeasurements();
       control();
       //gimbal response
     }
 
     handleTelemetry();
 
-    if(newDataAvailable && altitude <= ALTITUDE_CHECKPOINT_STATE2 ){ //5m
+    if(newDataAvailable && alt <= ALTITUDE_CHECKPOINT_STATE2 ){ //5m
       TC--;
       newDataAvailable = false;
     }
@@ -319,7 +340,7 @@ void findState(){
   while(numberOfmeasurements < 8){
     getMeasurements();
     if(newDataAvailable){
-      heightMeasurements[numberOfmeasurements] = altitude;
+      heightMeasurements[numberOfmeasurements] = alt;
       newDataAvailable = false;
       numberOfmeasurements++;
     }
@@ -370,11 +391,11 @@ void findState(){
 
 void handleTelemetry(){
 
-  if(millis() - lastTransmit >= 1000){
+  if(millis() - lastTransmit >= TELEMETRY_PERIOD){
     Serial2.print(teamID); Serial2.print(",");
     Serial2.print(missionTime); Serial2.print(",");
     Serial2.print(packetCount); Serial2.print(",");
-    Serial2.print(altitude,1); Serial2.print(",");
+    Serial2.print(alt,1); Serial2.print(",");
     Serial2.print(pressure,0); Serial2.print(",");
     Serial2.print(temperature,0); Serial2.print(",");
     Serial2.print(voltage,2); Serial2.print(",");
@@ -387,10 +408,10 @@ void handleTelemetry(){
     Serial2.print(roll,0); Serial2.print(",");
     Serial2.print(spinRate,0); Serial2.print(",");
     Serial2.println(bonusDirection,0);
-
+    ;
     lastTransmit = millis();
     packetCount++;
-    //store packetCount in EEPROM
+    storeInt(EEPROM_ADDR_PACKET_COUNT,packetCount);
   }
 }
 
@@ -413,18 +434,15 @@ double convertToDecimalDegrees(float deg){
 
 void readGPS(){
   GPS.read();
-  if(millis() - GPStimer >= 1000){ // read from GPS every 1 sec
-    GPStimer = millis();
-    if(GPS.newNMEAreceived()){
-      GPS.parse(GPS.lastNMEA()); // parse the new packet
+  if(GPS.newNMEAreceived()){
+    GPS.parse(GPS.lastNMEA()); // parse the new packet
 
-      // update measurements
-      latitude = convertToDecimalDegrees(GPS.latitude);
-      longitude = convertToDecimalDegrees(GPS.longitude);
-      gpsSats = GPS.satellites;
-      gpsAltitude = GPS.altitude - gpsAltitudeOffset;
-      GPSTime = String(GPS.hour) + ":" + String(GPS.minute) + ":" + String(GPS.seconds);
-    }
+    // update measurements
+    latitude = convertToDecimalDegrees(GPS.latitude);
+    longitude = convertToDecimalDegrees(GPS.longitude);
+    gpsSats = GPS.satellites;
+    gpsAltitude = GPS.altitude - gpsAltitudeOffset;
+    GPSTime = String(GPS.hour) + ":" + String(GPS.minute) + ":" + String(GPS.seconds);
   }
 }
 
@@ -433,7 +451,7 @@ void readGPS(){
 void readTempPress() {
   temperature = bmp.readTemperature();
   pressure = bmp.readPressure();
-  altitude = bmp.readAltitude(surfacePressure);
+  alt = bmp.readAltitude(1019.66) - altitudeOffset;
 }
 
 void readGyro(){
@@ -472,11 +490,9 @@ int secondsElapsed(int h1,int m1,int s1,int h2, int m2, int s2){
 
 
 void getMeasurements(){
-  readGyro();
   readGPS();
 
-  // pitch,roll = euler.(?)
-  if(millis() - lastSensitivePoll >= 500){
+  if(millis() - lastSensitivePoll >= SENSITIVE_POLLING){
     lastSensitivePoll = millis();
     readVoltage();
     readTempPress();
@@ -485,6 +501,10 @@ void getMeasurements(){
     newDataAvailable = true;
     // get startupTime from EEPROM
     // missionTime = secondsElapsed(...startupTime,hours,minutes,seconds);
+  }
+  if(millis() - lastSensitive2 >= BNO_POLLING){
+    lastSensitive2 = millis();
+    readGyro();
   }
 }
 
@@ -613,7 +633,7 @@ void readFloat(int addr, float &num){
 // 2way-communication
 void recvOneChar(){
   if (Serial2.available() > 0){
-    receivedChar = Serial.read();
+    receivedChar = Serial2.read();
     if(receivedChar == 'C'){
       newDataReceived = true;
     }
