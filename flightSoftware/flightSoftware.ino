@@ -26,6 +26,12 @@
 #define CameraServo2 22
 #define CameraServo3 23
 
+
+// Periods in milliseconds
+#define TELEMETRY_PERIOD 1000
+#define SENSITIVE_POLLING 500
+#define BNO_POLLING 20
+
 // Nichrome
 #define NICHROME_INTENSITY 30
 #define NICHROME_DURATION 2000 // milliseconds
@@ -128,7 +134,7 @@ uint32_t GPStimer;
 int hours,minutes,seconds;
 
 // Global Varriables for getMeasurements
-uint32_t lastSensitivePoll;
+uint32_t lastSensitivePoll,lastSensitive2;
 bool newDataAvailable = false;
 
 // Values that will be written to EEPROM
@@ -179,7 +185,7 @@ void setup(){
   // BNO Setup
   bno.begin();
 
-  lastTransmit = lastSensitivePoll = lastControlMeasurement = millis(); // initialize time counters
+  lastTransmit = lastSensitivePoll = lastControlMeasurement = lastSensitive2 = millis(); // initialize time counters
 
   findState();
 
@@ -294,9 +300,10 @@ void runState2(){
 
   while(TC > 0){
 
+    getMeasurements();
+
     if(millis() - lastControlMeasurement >= SAMPLING_PERIOD * 1000){
       lastControlMeasurement = millis();
-      getMeasurements();
       control();
       //gimbal response
     }
@@ -384,11 +391,11 @@ void findState(){
 
 void handleTelemetry(){
 
-  if(millis() - lastTransmit >= 1000){
+  if(millis() - lastTransmit >= TELEMETRY_PERIOD){
     Serial2.print(teamID); Serial2.print(",");
     Serial2.print(missionTime); Serial2.print(",");
     Serial2.print(packetCount); Serial2.print(",");
-    Serial2.print(altitude,1); Serial2.print(",");
+    Serial2.print(alt,1); Serial2.print(",");
     Serial2.print(pressure,0); Serial2.print(",");
     Serial2.print(temperature,0); Serial2.print(",");
     Serial2.print(voltage,2); Serial2.print(",");
@@ -401,7 +408,7 @@ void handleTelemetry(){
     Serial2.print(roll,0); Serial2.print(",");
     Serial2.print(spinRate,0); Serial2.print(",");
     Serial2.println(bonusDirection,0);
-
+    ;
     lastTransmit = millis();
     packetCount++;
     storeInt(EEPROM_ADDR_PACKET_COUNT,packetCount);
@@ -483,11 +490,9 @@ int secondsElapsed(int h1,int m1,int s1,int h2, int m2, int s2){
 
 
 void getMeasurements(){
-  readGyro();
   readGPS();
 
-  // pitch,roll = euler.(?)
-  if(millis() - lastSensitivePoll >= 500){
+  if(millis() - lastSensitivePoll >= SENSITIVE_POLLING){
     lastSensitivePoll = millis();
     readVoltage();
     readTempPress();
@@ -496,6 +501,10 @@ void getMeasurements(){
     newDataAvailable = true;
     // get startupTime from EEPROM
     // missionTime = secondsElapsed(...startupTime,hours,minutes,seconds);
+  }
+  if(millis() - lastSensitive2 >= BNO_POLLING){
+    lastSensitive2 = millis();
+    readGyro();
   }
 }
 
