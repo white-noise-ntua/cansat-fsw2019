@@ -59,7 +59,7 @@ Adafruit_BNO055 bno = Adafruit_BNO055();
 
 const int teamID = 4440;
 int packetCount;
-float altitude;
+float alt;
 float pressure;
 float temperature;
 float voltage;
@@ -79,7 +79,9 @@ int TC;
 
 // Global Varriables for calibration
 float pitchOffset=0,rollOffset=0;
-float surfacePressure=1019.66,gpsAltitudeOffset=0;
+float gpsAltitudeOffset=0;
+float altitudeOffset=0;
+float surfacePressure = 1019.66;
 
 // Global Varriables for 2-way communication
 char receivedChar;
@@ -203,6 +205,12 @@ void loop(){
 
 void runState0(){
   sensorsCalibrated = EEPROM.read(EEPROM_ADDR_CALIBRATION);
+  if(sensorsCalibrated){
+    readFloat(EEPROM_ADDR_PITCH,pitchOffset);
+    readFloat(EEPROM_ADDR_ROLL,rollOffset);
+    readFloat(EEPROM_ADDR_PRESSURE,altitudeOffset);
+    readFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
+  }
   while(!sensorsCalibrated){
     getMeasurements();
     handleTelemetry();
@@ -211,13 +219,14 @@ void runState0(){
     if(newDataReceived){
       // calibrate sensors
       int numberOfmeasurements = 0;
+      float measuringAlt=0;
       while(numberOfmeasurements < 10){ // sample sensors for approx 5 seconds
         getMeasurements();
         if(newDataAvailable){
           pitchOffset += pitch;
           rollOffset += roll;
           // yaw calibration is not needed
-          surfacePressure += pressure;
+          measuringAlt += alt;
           gpsAltitudeOffset += gpsAltitude;
 
           numberOfmeasurements++;
@@ -227,12 +236,12 @@ void runState0(){
 
       pitchOffset /= numberOfmeasurements;
       rollOffset /= numberOfmeasurements;
-      surfacePressure /= numberOfmeasurements;
+      altitudeOffset = measuringAlt/numberOfmeasurements;
       gpsAltitudeOffset /= numberOfmeasurements;
 
       writeFloat(EEPROM_ADDR_PITCH,pitchOffset);
       writeFloat(EEPROM_ADDR_ROLL,rollOffset);
-      writeFloat(EEPROM_ADDR_PRESSURE,surfacePressure);
+      writeFloat(EEPROM_ADDR_PRESSURE,altitudeOffset);
       writeFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
 
       sensorsCalibrated = true;
@@ -246,7 +255,7 @@ void runState0(){
   while(TC > 0){
     getMeasurements();
     handleTelemetry();
-    if(newDataAvailable && altitude >= ALTITUDE_CHECKPOINT_STATE0 ){ //500m
+    if(newDataAvailable && alt >= ALTITUDE_CHECKPOINT_STATE0 ){ //500m
       TC--;
       newDataAvailable = false;
     }
@@ -261,7 +270,7 @@ void runState1(){
   while(TC > 0){
     getMeasurements();
     handleTelemetry();
-    if(newDataAvailable && altitude <= ALTITUDE_CHECKPOINT_STATE1 ){ //455m
+    if(newDataAvailable && alt <= ALTITUDE_CHECKPOINT_STATE1 ){ //455m
       TC--;
       newDataAvailable = false;
     }
@@ -294,7 +303,7 @@ void runState2(){
 
     handleTelemetry();
 
-    if(newDataAvailable && altitude <= ALTITUDE_CHECKPOINT_STATE2 ){ //5m
+    if(newDataAvailable && alt <= ALTITUDE_CHECKPOINT_STATE2 ){ //5m
       TC--;
       newDataAvailable = false;
     }
@@ -324,7 +333,7 @@ void findState(){
   while(numberOfmeasurements < 8){
     getMeasurements();
     if(newDataAvailable){
-      heightMeasurements[numberOfmeasurements] = altitude;
+      heightMeasurements[numberOfmeasurements] = alt;
       newDataAvailable = false;
       numberOfmeasurements++;
     }
@@ -395,7 +404,7 @@ void handleTelemetry(){
 
     lastTransmit = millis();
     packetCount++;
-    //store packetCount in EEPROM
+    storeInt(EEPROM_ADDR_PACKET_COUNT,packetCount);
   }
 }
 
@@ -438,7 +447,7 @@ void readGPS(){
 void readTempPress() {
   temperature = bmp.readTemperature();
   pressure = bmp.readPressure();
-  altitude = bmp.readAltitude(surfacePressure);
+  alt = bmp.readAltitude(1019.66) - altitudeOffset;
 }
 
 void readGyro(){
@@ -618,7 +627,7 @@ void readFloat(int addr, float &num){
 // 2way-communication
 void recvOneChar(){
   if (Serial2.available() > 0){
-    receivedChar = Serial.read();
+    receivedChar = Serial2.read();
     if(receivedChar == 'C'){
       newDataReceived = true;
     }
