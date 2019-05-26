@@ -150,23 +150,22 @@ void setup(){
   pinMode(CameraServo2,OUTPUT);
   pinMode(CameraServo3,OUTPUT);
 
-  Serial2.begin(9600); // XBee
+  Serial2.begin(115200); // XBee
 
-  delay(10000);
+  delay(2000);
   // GPS Setup
 
   Serial3.begin(9600); // 9600 is the default baud rate
-  Serial1.print("$PMTK251,115200*1F");  //change gps baudrate to 115200
-  Serial1.write('\r');
-  Serial1.write('\n');
+  Serial3.print("$PMTK251,115200*1F");  //change gps baudrate to 115200
+  Serial3.write('\r');
+  Serial3.write('\n');
 
-  Serial1.flush();
-  Serial1.end();
+  Serial3.flush();
+  Serial3.end();
 
   GPS.begin(115200);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // packet type
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_2HZ); // 2 Hz update frequency
-  // delay(1000); needed for GPS?
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ); // 5 Hz update frequency
 
   // BMP Setup
   bmp.begin();
@@ -428,18 +427,15 @@ double convertToDecimalDegrees(float deg){
 
 void readGPS(){
   GPS.read();
-  if(millis() - GPStimer >= 1000){ // read from GPS every 1 sec
-    GPStimer = millis();
-    if(GPS.newNMEAreceived()){
-      GPS.parse(GPS.lastNMEA()); // parse the new packet
+  if(GPS.newNMEAreceived()){
+    GPS.parse(GPS.lastNMEA()); // parse the new packet
 
-      // update measurements
-      latitude = convertToDecimalDegrees(GPS.latitude);
-      longitude = convertToDecimalDegrees(GPS.longitude);
-      gpsSats = GPS.satellites;
-      gpsAltitude = GPS.altitude - gpsAltitudeOffset;
-      GPSTime = String(GPS.hour) + ":" + String(GPS.minute) + ":" + String(GPS.seconds);
-    }
+    // update measurements
+    latitude = convertToDecimalDegrees(GPS.latitude);
+    longitude = convertToDecimalDegrees(GPS.longitude);
+    gpsSats = GPS.satellites;
+    gpsAltitude = GPS.altitude - gpsAltitudeOffset;
+    GPSTime = String(GPS.hour) + ":" + String(GPS.minute) + ":" + String(GPS.seconds);
   }
 }
 
