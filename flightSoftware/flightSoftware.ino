@@ -17,7 +17,7 @@
 #define FinsServo2 4
 #define FinsServo3 5
 
-#define NichromeWire 11
+#define NichromeWire 6
 #define VoltageSensor 16
 // A2
 
@@ -25,6 +25,10 @@
 #define CameraServo1 21
 #define CameraServo2 22
 #define CameraServo3 23
+
+// Nichrome
+#define NICHROME_INTENSITY 30
+#define NICHROME_DURATION 2000 // milliseconds
 
 // RPM
 #define RPM_ADDR 10
@@ -263,9 +267,10 @@ void runState1(){
     }
   }
 
-  digitalWrite(NichromeWire,HIGH);
-  delay(3000);
-  digitalWrite(NichromeWire,LOW);
+  // releasing payload
+  analogWrite(NichromeWire,NICHROME_INTENSITY);
+  delay(NICHROME_DURATION);
+  analogWrite(NichromeWire,0);
 
   EEPROM.write(EEPROM_ADDR_NICHROME,1);
   //save isNichromeBurned = true in EEPROM

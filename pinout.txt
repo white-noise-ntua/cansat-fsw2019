@@ -10,7 +10,7 @@ Serial2
 Pin 9 - RX XBee
 Pin 10 - TX XBee
 
-Pin 11 - Nichrome Wire
+Pin 6 - Nichrome Wire
 
 Pin 16 - Analogue Battery Voltage (A2)
 Pin 17 - Buzzer
