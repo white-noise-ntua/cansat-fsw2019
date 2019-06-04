@@ -392,23 +392,27 @@ void findState(){
 void handleTelemetry(){
 
   if(millis() - lastTransmit >= TELEMETRY_PERIOD){
-    Serial2.print(teamID); Serial2.print(",");
-    Serial2.print(missionTime); Serial2.print(",");
-    Serial2.print(packetCount); Serial2.print(",");
-    Serial2.print(alt,1); Serial2.print(",");
-    Serial2.print(pressure,0); Serial2.print(",");
-    Serial2.print(temperature,0); Serial2.print(",");
-    Serial2.print(voltage,2); Serial2.print(",");
-    Serial2.print(GPSTime); Serial2.print(",");
-    Serial2.print(latitude,4); Serial2.print(",");
-    Serial2.print(longitude,4); Serial2.print(",");
-    Serial2.print(gpsAltitude,1); Serial2.print(",");
-    Serial2.print(gpsSats); Serial2.print(",");
-    Serial2.print(pitch,0); Serial2.print(",");
-    Serial2.print(roll,0); Serial2.print(",");
-    Serial2.print(spinRate,0); Serial2.print(",");
-    Serial2.println(bonusDirection,0);
-    ;
+
+    String output = String("");
+    String delim  = String(",");
+
+    output += String(teamID) + delim;
+    output += String(missionTime) + delim;
+    output += String(packetCount) + delim;
+    output += String(alt, 1) + delim;
+    output += String(pressure, 0) + delim;
+    output += String(temperature, 0) + delim;
+    output += String(voltage, 2) + delim;
+    output += String(GPSTime) + delim;
+    output += String(latitude, 4) + delim;
+    output += String(longitude, 4) + delim;
+    output += String(gpsAltitude, 1) + delim;
+    output += String(gpsSats) + delim;
+    output += String(pitch, 0) + delim;
+    output += String(roll, 0) + delim;
+    output += String(spinRate, 0) + delim;
+    output += String(bonusDirection, 0);
+
     lastTransmit = millis();
     packetCount++;
     storeInt(EEPROM_ADDR_PACKET_COUNT,packetCount);
