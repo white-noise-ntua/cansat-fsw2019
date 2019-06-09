@@ -192,6 +192,12 @@ void setup(){
 
   findState();
 
+  tone(BuzzerPin,2048,500);
+  delay(1000);
+
+  tone(BuzzerPin,2048,500);
+  delay(1000);
+
 }
 
 void loop(){
