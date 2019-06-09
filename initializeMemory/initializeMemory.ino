@@ -17,6 +17,7 @@
 // 60..64 -> yaw
 // 70..74 -> altitude offset
 // 80..84 -> gpsAltitude at surface
+// 100..104 -> missionTime calibration
 
 #define EEPROM_ADDR_PREVSTATE 10
 #define EEPROM_ADDR_NICHROME 15
@@ -27,7 +28,7 @@
 #define EEPROM_ADDR_YAW 60
 #define EEPROM_ADDR_ALTITUDE 70
 #define EEPROM_ADDR_GPS_ALT 80
-
+#define EEPROM_ADDR_MISSION_TIME 100
 
 float zero = 0.0;
 int prevState = 255;
@@ -51,6 +52,9 @@ void setup(){
   // writing packetCount
   storeInt(EEPROM_ADDR_PACKET_COUNT,0);
 
+  // writing initial mission time
+  storeInt(EEPROM_ADDR_MISSION_TIME,0);
+
   // writing pitch
   writeFloat(EEPROM_ADDR_PITCH,zero);
 
@@ -71,7 +75,7 @@ void setup(){
 }
 
 void loop(){
-Serial.println("Checking values written...");
+  Serial.println("Checking values written...");
 
   i = EEPROM.read(EEPROM_ADDR_PREVSTATE);
   if(i==prevState) Serial.println("Previous state is OK!");
@@ -88,6 +92,10 @@ Serial.println("Checking values written...");
   i = readInt(EEPROM_ADDR_PACKET_COUNT);
   if(i==0) Serial.println("Packet Count is OK!");
   else Serial.println("Error writing packet count!");
+
+  i = readInt(EEPROM_ADDR_MISSION_TIME);
+  if(i==0) Serial.println("Mission time is OK!");
+  else Serial.println("Error writing mission time!");
 
   readFloat(EEPROM_ADDR_PITCH,num);
   if(num==0.0) Serial.println("Pitch is OK!");
@@ -111,7 +119,7 @@ Serial.println("Checking values written...");
 
   Serial.println("Checks finised! Do not forget to upload the flight software!");
 
-  delay(2000);
+  delay(5000);
 }
 
 void storeInt(int addr, uint32_t num){
