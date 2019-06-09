@@ -433,7 +433,8 @@ void handleTelemetry(){
     output += String(pitch, 0) + delim;
     output += String(roll, 0) + delim;
     output += String(spinRate, 0) + delim;
-    output += String(bonusDirection, 0);
+    output += String(STATE) + delim;
+    output += String(coords.psi, 0); // bonusDirection
 
     lastTransmit = millis();
     packetCount++;
@@ -524,9 +525,8 @@ void getMeasurements(){
     readRPM();
     readTime();
     newDataAvailable = true;
-    // get startupTime from EEPROM
-    // missionTime = secondsElapsed(...startupTime,hours,minutes,seconds);
   }
+
   if(millis() - lastSensitive2 >= BNO_POLLING){
     lastSensitive2 = millis();
     readGyro();
