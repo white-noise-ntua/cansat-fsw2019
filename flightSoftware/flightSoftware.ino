@@ -152,7 +152,7 @@ void setup(){
 
   for (int i = 0; i < 3; i++) {
     fins[i].attach(finPins[i]);
-    fins[i].write(FINS_OFFSET[i]);
+    fins[i].write(90+FINS_OFFSET[i]);
   }
 
   rtc.autoprobe();
