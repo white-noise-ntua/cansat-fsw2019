@@ -17,7 +17,8 @@
 #define FinsServo2 4
 #define FinsServo3 5
 
-#define NichromeWire 6
+#define NichromeWire1 6 // for container
+#define NichromeWire2 73 // for payload
 #define VoltageSensor 16
 // A2
 
@@ -35,6 +36,7 @@
 // Nichrome
 #define NICHROME_INTENSITY 30
 #define NICHROME_DURATION 2000 // milliseconds
+#define PAUSE_BETWEEN_BURNINGS 1000 // milliseconds
 
 // RPM
 #define RPM_ADDR 10
@@ -145,7 +147,8 @@ void setup(){
   packetCount = readInt(EEPROM_ADDR_PACKET_COUNT);
   pinMode(BuzzerPin,OUTPUT);
   pinMode(CameraPin,OUTPUT);
-  pinMode(NichromeWire,OUTPUT);
+  pinMode(NichromeWire1,OUTPUT);
+  pinMode(NichromeWire2,OUTPUT);
 
   for (int i = 0; i < 3; i++) {
     fins[i].attach(finPins[i]);
@@ -282,10 +285,18 @@ void runState1(){
     }
   }
 
-  // releasing payload
-  analogWrite(NichromeWire,NICHROME_INTENSITY);
+  // burn container's rope
+  analogWrite(NichromeWire1,NICHROME_INTENSITY);
   delay(NICHROME_DURATION);
-  analogWrite(NichromeWire,0);
+  analogWrite(NichromeWire1,0);
+
+  delay(PAUSE_BETWEEN_BURNINGS);
+
+  // burn payload's rope
+  analogWrite(NichromeWire2,NICHROME_INTENSITY);
+  delay(NICHROME_DURATION);
+  analogWrite(NichromeWire2,0);
+
 
   EEPROM.write(EEPROM_ADDR_NICHROME,1);
   //save isNichromeBurned = true in EEPROM
