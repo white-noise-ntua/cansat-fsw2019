@@ -4,8 +4,7 @@
 #include <Adafruit_GPS.h>
 #include <utility/imumaths.h>
 #include <Wire.h>
-#include <TimeLib.h>
-#include <DS1307RTC.h>
+#include <RTCx.h>
 #include <Servo.h>
 #include <EEPROM.h>
 
@@ -58,7 +57,7 @@
 #define EEPROM_ADDR_YAW 60
 #define EEPROM_ADDR_ALTITUDE 70
 #define EEPROM_ADDR_GPS_ALT 80
-
+#define EEPROM_ADDR_MISSION_TIME 100
 
 Adafruit_GPS GPS(&GPSSerial);
 Adafruit_BMP280 bmp;
@@ -71,7 +70,7 @@ float alt;
 float pressure;
 float temperature;
 float voltage;
-int missionTime;
+RTCx::time_t missionTime;
 String GPSTime;
 float latitude;
 float longitude;
@@ -90,6 +89,7 @@ float pitchOffset=0,rollOffset=0;
 float gpsAltitudeOffset=0;
 float altitudeOffset=0;
 float surfacePressure = 1019.66;
+RTCx::time_t missionTimeCalibration = 0;
 
 // Global Varriables for 2-way communication
 char receivedChar;
@@ -154,6 +154,8 @@ void setup(){
     fins[i].attach(finPins[i]);
     fins[i].write(FINS_OFFSET[i]);
   }
+
+  rtc.autoprobe();
 
   pinMode(CameraServo1,OUTPUT);
   pinMode(CameraServo2,OUTPUT);
@@ -225,6 +227,7 @@ void runState0(){
     readFloat(EEPROM_ADDR_ROLL,rollOffset);
     readFloat(EEPROM_ADDR_ALTITUDE,altitudeOffset);
     readFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
+    missionTimeCalibration = readInt(EEPROM_ADDR_MISSION_TIME);
   }
   while(!sensorsCalibrated){
     getMeasurements();
@@ -253,11 +256,13 @@ void runState0(){
       rollOffset /= numberOfmeasurements;
       altitudeOffset = measuringAlt/numberOfmeasurements;
       gpsAltitudeOffset /= numberOfmeasurements;
+      missionTimeCalibration = missionTime;
 
       writeFloat(EEPROM_ADDR_PITCH,pitchOffset);
       writeFloat(EEPROM_ADDR_ROLL,rollOffset);
       writeFloat(EEPROM_ADDR_ALTITUDE,altitudeOffset);
       writeFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
+      storeInt(EEPROM_ADDR_MISSION_TIME,missionTimeCalibration);
 
       sensorsCalibrated = true;
       EEPROM.write(EEPROM_ADDR_CALIBRATION,1);
@@ -495,11 +500,10 @@ void readRPM() {
 // === Functions for RTC ===
 
 void readTime(){
-  tmElements_t tm;
-  RTC.read(tm);
-  hours = tm.Hour;
-  minutes = tm.Minute;
-  seconds = tm.Second;
+  struct RTCx::tm tm;
+  rtc.readClock(tm);
+  RTCx::time_t t = RTCx::mktime(&tm);
+  missionTime = t - missionTimeCalibration;
 }
 
 int secondsElapsed(int h1,int m1,int s1,int h2, int m2, int s2){
@@ -593,6 +597,7 @@ void control(){
 // 60..64 -> yaw
 // 70..74 -> pressure at surface
 // 80..84 -> gpsAltitude at surface
+// 100..104 -> missionTime calibration
 
 void storeInt(int addr, uint32_t num){
   // store num in EEPROM starting in address addr
