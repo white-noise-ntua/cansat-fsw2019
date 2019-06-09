@@ -237,7 +237,7 @@ void runState0(){
     if(newDataReceived){
       // calibrate sensors
       int numberOfmeasurements = 0;
-      float measuringAlt=0;
+      float measuringAlt=0,gpsMeasuringAtl=0;
       while(numberOfmeasurements < 10){ // sample sensors for approx 5 seconds
         getMeasurements();
         if(newDataAvailable){
@@ -245,7 +245,7 @@ void runState0(){
           rollOffset += roll;
           // yaw calibration is not needed
           measuringAlt += alt;
-          gpsAltitudeOffset += gpsAltitude;
+          gpsMeasuringAtl += gpsAltitude;
 
           numberOfmeasurements++;
           newDataAvailable = false;
@@ -255,7 +255,7 @@ void runState0(){
       pitchOffset /= numberOfmeasurements;
       rollOffset /= numberOfmeasurements;
       altitudeOffset = measuringAlt/numberOfmeasurements;
-      gpsAltitudeOffset /= numberOfmeasurements;
+      gpsAltitudeOffset = gpsMeasuringAtl/numberOfmeasurements;
       missionTimeCalibration = missionTime;
 
       writeFloat(EEPROM_ADDR_PITCH,pitchOffset);
