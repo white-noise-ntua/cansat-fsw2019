@@ -12,19 +12,20 @@
 #define BuzzerPin 17
 #define GPSSerial Serial3
 
-#define FinsServo1 3
-#define FinsServo2 4
-#define FinsServo3 5
+#define FinsServo1 21
+#define FinsServo2 22
+#define FinsServo3 23
 
 #define NichromeWire1 6 // for container
-#define NichromeWire2 73 // for payload
+#define NichromeWire2 20 // for payload
 #define VoltageSensor 16
 // A2
 
-#define CameraPin 20
-#define CameraServo1 21
-#define CameraServo2 22
-#define CameraServo3 23
+#define CameraPin 11
+#define CameraPitch 3
+#define CameraRoll  4
+#define CameraYaw   5
+#define GIMBAL_OFFSET_YAW 30
 
 
 // Periods in milliseconds
@@ -437,7 +438,7 @@ void handleTelemetry(){
     output += String(coords.psi, 0); // bonusDirection
 
     Serial2.println(output);
-    
+
     lastTransmit = millis();
     packetCount++;
     storeInt(EEPROM_ADDR_PACKET_COUNT,packetCount);
