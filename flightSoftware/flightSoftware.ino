@@ -524,7 +524,7 @@ void getMeasurements(){
     lastSensitivePoll = millis();
     readVoltage();
     readTempPress();
-    readRPM();
+    //readRPM();
     readTime();
     newDataAvailable = true;
   }
