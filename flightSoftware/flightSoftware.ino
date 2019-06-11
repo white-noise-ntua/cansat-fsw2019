@@ -436,6 +436,8 @@ void handleTelemetry(){
     output += String(STATE) + delim;
     output += String(coords.psi, 0); // bonusDirection
 
+    Serial2.println(output);
+    
     lastTransmit = millis();
     packetCount++;
     storeInt(EEPROM_ADDR_PACKET_COUNT,packetCount);
