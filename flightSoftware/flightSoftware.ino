@@ -26,7 +26,7 @@
 #define CameraRoll  4
 #define CameraYaw   5
 #define GIMBAL_OFFSET_YAW 30
-
+#define MAX_ANGLE 80
 
 // Periods in milliseconds
 #define TELEMETRY_PERIOD 1000
@@ -79,14 +79,13 @@ float gpsAltitude;
 int gpsSats;
 double spinRate;
 float bonusDirection;
-float pitch,roll;
+float pitch,roll,yaw;
 
 
 int STATE;
 int TC;
 
 // Global Varriables for calibration
-float pitchOffset=0,rollOffset=0;
 float gpsAltitudeOffset=0;
 float altitudeOffset=0;
 float surfacePressure = 1019.66;
@@ -107,8 +106,12 @@ const float FINS_OFFSET[3] = {0, 0, 0};
 const float FINS_MIN[3] = {70, 70, 70};
 const float FINS_MAX[3] = {110, 110, 110};
 const int finPins[3] = {FinsServo1, FinsServo2, FinsServo3};
-const float SAMPLING_PERIOD = 0.02;
+const float SAMPLING_PERIOD = BNO_POLLING/1000;
+
 Servo fins[3];
+Servo gimbal[3];
+
+const int gimbalPins[3] = {CameraYaw, CameraPitch, CameraRoll};
 
 imu::Vector<3> euler;
 
@@ -151,16 +154,20 @@ void setup(){
   pinMode(NichromeWire1,OUTPUT);
   pinMode(NichromeWire2,OUTPUT);
 
+  analogWrite(NichromeWire1,0);
+  analogWrite(NichromeWire2,0);
+
   for (int i = 0; i < 3; i++) {
     fins[i].attach(finPins[i]);
     fins[i].write(90+FINS_OFFSET[i]);
+
+    gimbal[i].attach(gimbalPins[i]);
+    gimbal[i].write(90);
   }
 
-  rtc.autoprobe();
+  gimbal[0].write(90+GIMBAL_OFFSET_YAW);
 
-  pinMode(CameraServo1,OUTPUT);
-  pinMode(CameraServo2,OUTPUT);
-  pinMode(CameraServo3,OUTPUT);
+  rtc.autoprobe();
 
   Serial2.begin(115200); // XBee
 
