@@ -326,7 +326,7 @@ void runState2(){
     if(millis() - lastControlMeasurement >= SAMPLING_PERIOD * 1000){
       lastControlMeasurement = millis();
       control();
-      //gimbal response
+      stabilizeCamera();
     }
 
     handleTelemetry();
@@ -666,4 +666,28 @@ void recvOneChar(){
       newDataReceived = true;
     }
   }
+}
+
+// ========================
+void stabilizeCameraOLD(){
+  float theta, pitch_cor, roll_cor;
+  theta = (yaw+GIMBAL_OFFSET_YAW)*3.1416/180;
+  pitch_cor = roll*sin(theta)+pitch*cos(theta);
+  roll_cor  = roll*cos(theta)-pitch*sin(theta);
+
+  gimbal[0].write(int(90+constrain(yaw,-MAX_ANGLE,MAX_ANGLE)));
+  gimbal[1].write(int(90+constrain(pitch_cor,-MAX_ANGLE,MAX_ANGLE)));
+  gimbal[2].write(int(90+constrain(roll_cor,-MAX_ANGLE,MAX_ANGLE)));
+}
+
+void stabilizeCamera(){ //order Yaw, Pitch Roll;
+  float theta, pitch_cor, roll_cor;
+  theta = (yaw-GIMBAL_OFFSET_YAW)*3.1416/180;
+  //theta = 0;
+  pitch_cor = roll*sin(theta)+pitch*cos(theta);
+  roll_cor  = roll*cos(theta)-pitch*sin(theta);
+
+  gimbal[0].write(int(90+constrain(-yaw+GIMBAL_OFFSET_YAW,-MAX_ANGLE,MAX_ANGLE)));
+  gimbal[1].write(int(90+constrain(-pitch_cor,-MAX_ANGLE,MAX_ANGLE)));
+  gimbal[2].write(int(90+constrain(-roll_cor,-MAX_ANGLE,MAX_ANGLE)));
 }
