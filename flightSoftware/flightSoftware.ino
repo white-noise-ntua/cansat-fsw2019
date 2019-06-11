@@ -231,8 +231,6 @@ void loop(){
 void runState0(){
   sensorsCalibrated = EEPROM.read(EEPROM_ADDR_CALIBRATION);
   if(sensorsCalibrated){
-    readFloat(EEPROM_ADDR_PITCH,pitchOffset);
-    readFloat(EEPROM_ADDR_ROLL,rollOffset);
     readFloat(EEPROM_ADDR_ALTITUDE,altitudeOffset);
     readFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
     missionTimeCalibration = readInt(EEPROM_ADDR_MISSION_TIME);
@@ -249,9 +247,6 @@ void runState0(){
       while(numberOfmeasurements < 10){ // sample sensors for approx 5 seconds
         getMeasurements();
         if(newDataAvailable){
-          pitchOffset += pitch;
-          rollOffset += roll;
-          // yaw calibration is not needed
           measuringAlt += alt;
           gpsMeasuringAtl += gpsAltitude;
 
@@ -260,14 +255,10 @@ void runState0(){
         }
       }
 
-      pitchOffset /= numberOfmeasurements;
-      rollOffset /= numberOfmeasurements;
       altitudeOffset = measuringAlt/numberOfmeasurements;
       gpsAltitudeOffset = gpsMeasuringAtl/numberOfmeasurements;
       missionTimeCalibration = missionTime;
 
-      writeFloat(EEPROM_ADDR_PITCH,pitchOffset);
-      writeFloat(EEPROM_ADDR_ROLL,rollOffset);
       writeFloat(EEPROM_ADDR_ALTITUDE,altitudeOffset);
       writeFloat(EEPROM_ADDR_GPS_ALT,gpsAltitudeOffset);
       storeInt(EEPROM_ADDR_MISSION_TIME,missionTimeCalibration);
@@ -493,8 +484,9 @@ void readTempPress() {
 
 void readGyro(){
   euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-  pitch = -euler.y()-pitchOffset;
-  roll = euler.z()-rollOffset;
+  pitch = euler.y();
+  roll = -euler.z();
+  yaw = wrap_angle(euler.x());
   transform_coords();
 }
 
