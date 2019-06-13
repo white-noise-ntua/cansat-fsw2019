@@ -85,6 +85,9 @@ float pitch,roll,yaw;
 int STATE;
 int TC;
 
+unsigned long time_0 = 0;
+
+
 // Global Varriables for calibration
 float gpsAltitudeOffset=0;
 float altitudeOffset=0;
@@ -148,6 +151,12 @@ int prevState = -1;
 bool isNichromeBurned = false;
 
 void setup(){
+  Wire.begin();
+
+  // RPM
+  pinMode(14,INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(14),rpm_int, FALLING);
+
   packetCount = readInt(EEPROM_ADDR_PACKET_COUNT);
   pinMode(BuzzerPin,OUTPUT);
   pinMode(CameraPin,OUTPUT);
@@ -490,14 +499,10 @@ void readGyro(){
   transform_coords();
 }
 
-void readRPM() {
-  byte data[3];
-  Wire.requestFrom(RPM_ADDR, 3);
-  for (byte i=0; i<NUM_BYTES; i++)
-    data[i] = Wire.read();
-
-  uint32_t d = ((uint32_t)data[0] << 16) + ((uint32_t)data[1] << 8) + ((uint32_t)data[2]);
-  spinRate =  (double)(60.0 / (d * 0.000004));
+void rpm_int() {
+  unsigned long t = micros();
+  spinRate = (60.0 / (0.000001 * (t-time_0)));
+  time_0 = t;
 }
 
 // === Functions for RTC ===
@@ -524,7 +529,6 @@ void getMeasurements(){
     lastSensitivePoll = millis();
     readVoltage();
     readTempPress();
-    //readRPM();
     readTime();
     newDataAvailable = true;
   }
