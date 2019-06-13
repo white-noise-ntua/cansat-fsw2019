@@ -21,7 +21,6 @@
 #define VoltageSensor 16
 // A2
 
-#define CameraPin 11
 #define CameraPitch 3
 #define CameraRoll  4
 #define CameraYaw   5
@@ -109,7 +108,7 @@ const float FINS_OFFSET[3] = {0, 0, 0};
 const float FINS_MIN[3] = {70, 70, 70};
 const float FINS_MAX[3] = {110, 110, 110};
 const int finPins[3] = {FinsServo1, FinsServo2, FinsServo3};
-const float SAMPLING_PERIOD = BNO_POLLING/1000;
+const float SAMPLING_PERIOD = BNO_POLLING/1000.0;
 
 Servo fins[3];
 Servo gimbal[3];
@@ -159,7 +158,6 @@ void setup(){
 
   packetCount = readInt(EEPROM_ADDR_PACKET_COUNT);
   pinMode(BuzzerPin,OUTPUT);
-  pinMode(CameraPin,OUTPUT);
   pinMode(NichromeWire1,OUTPUT);
   pinMode(NichromeWire2,OUTPUT);
 
@@ -324,7 +322,6 @@ void runState1(){
 }
 
 void runState2(){
-  digitalWrite(CameraPin,HIGH);
 
   TC = NUMBER_OF_TRIES;
 
@@ -453,7 +450,7 @@ void handleTelemetry(){
 }
 
 void readVoltage(){
-  voltage = analogRead(2);
+  voltage = map(analogRead(2),0,1023,0,5)*27.4/10.0;
 }
 
 // === GPS Functions ===
@@ -686,7 +683,7 @@ void stabilizeCameraOLD(){
 
 void stabilizeCamera(){ //order Yaw, Pitch Roll;
   float theta, pitch_cor, roll_cor;
-  theta = (yaw-GIMBAL_OFFSET_YAW)*3.1416/180;
+  theta = yaw*3.1416/180;
   //theta = 0;
   pitch_cor = roll*sin(theta)+pitch*cos(theta);
   roll_cor  = roll*cos(theta)-pitch*sin(theta);
