@@ -160,6 +160,7 @@ void setup(){
   pinMode(BuzzerPin,OUTPUT);
   pinMode(NichromeWire1,OUTPUT);
   pinMode(NichromeWire2,OUTPUT);
+  pinMode(VoltageSensor,INPUT);
 
   analogWrite(NichromeWire1,0);
   analogWrite(NichromeWire2,0);
@@ -450,7 +451,7 @@ void handleTelemetry(){
 }
 
 void readVoltage(){
-  voltage = map(analogRead(2),0,1023,0,5)*27.4/10.0;
+  voltage = map(analogRead(VoltageSensor),0,1023,0,3.3)*2.7;
 }
 
 // === GPS Functions ===
