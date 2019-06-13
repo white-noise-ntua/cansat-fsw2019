@@ -34,9 +34,9 @@
 #define BNO_POLLING 20
 
 // Nichrome
-#define NICHROME_INTENSITY 30
-#define NICHROME_DURATION 2000 // milliseconds
-#define PAUSE_BETWEEN_BURNINGS 1000 // milliseconds
+#define NICHROME_INTENSITY 90
+#define NICHROME_DURATION 1200 // milliseconds
+#define PAUSE_BETWEEN_BURNINGS 2000 // milliseconds
 
 // RPM
 #define RPM_ADDR 10
