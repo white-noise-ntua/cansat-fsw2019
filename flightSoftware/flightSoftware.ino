@@ -34,6 +34,7 @@
 
 // Nichrome
 #define NICHROME_INTENSITY 90
+#define NICHROME_CONTAINER_INTENSITY 110
 #define NICHROME_DURATION 1200 // milliseconds
 #define PAUSE_BETWEEN_BURNINGS 2000 // milliseconds
 
@@ -308,7 +309,7 @@ void runState1(){
   }
 
   // burn container's rope
-  analogWrite(NichromeWire1,NICHROME_INTENSITY);
+  analogWrite(NichromeWire1,NICHROME_CONTAINER_INTENSITY);
   delay(NICHROME_DURATION);
   analogWrite(NichromeWire1,0);
 
@@ -444,7 +445,7 @@ void handleTelemetry(){
     output += String(roll, 0) + delim;
     output += String(spinRate, 0) + delim;
     output += String(STATE) + delim;
-    output += String(coords.psi, 0); // bonusDirection
+    output += String(yaw, 0); // bonusDirection
 
     Serial2.println(output);
 
