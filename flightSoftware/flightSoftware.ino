@@ -458,7 +458,9 @@ void handleTelemetry(){
 void readVoltage(){
   float R2 = 4.6;
   float R1 = 16.4;
-  float value = (value * 3.3) / 1024.0;
+
+  float value = analogRead(VoltageSensor);
+  float vout = (value * 3.3) / 1024.0;
   voltage = vout / (R2/(R1+R2));
 }
 
