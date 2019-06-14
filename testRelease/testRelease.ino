@@ -459,7 +459,10 @@ void handleTelemetry(){
 }
 
 void readVoltage(){
-  voltage = map(analogRead(VoltageSensor),0,1023,0,3.3)*4.565;
+  float R2 = 4.6;
+  float R1 = 16.4;
+  float value = (value * 3.3) / 1024.0;
+  voltage = vout / (R2/(R1+R2));
 }
 
 // === GPS Functions ===
