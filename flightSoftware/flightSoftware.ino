@@ -150,6 +150,11 @@ int prevState = -1;
 bool isNichromeBurned = false;
 
 void setup(){
+  pinMode(BuzzerPin,OUTPUT);
+
+  tone(BuzzerPin,2048,200);
+  delay(400);
+
   Wire.begin();
 
   // RPM
@@ -157,7 +162,6 @@ void setup(){
   attachInterrupt(digitalPinToInterrupt(14),rpm_int, FALLING);
 
   packetCount = readInt(EEPROM_ADDR_PACKET_COUNT);
-  pinMode(BuzzerPin,OUTPUT);
   pinMode(NichromeWire1,OUTPUT);
   pinMode(NichromeWire2,OUTPUT);
   pinMode(VoltageSensor,INPUT);
@@ -210,11 +214,11 @@ void setup(){
 
   findState();
 
-  tone(BuzzerPin,2048,500);
-  delay(1000);
+  tone(BuzzerPin,2048,200);
+  delay(400);
 
-  tone(BuzzerPin,2048,500);
-  delay(1000);
+  tone(BuzzerPin,2048,200);
+  delay(400);
 
 }
 
@@ -451,7 +455,7 @@ void handleTelemetry(){
 }
 
 void readVoltage(){
-  voltage = map(analogRead(VoltageSensor),0,1023,0,3.3)*2.7;
+  voltage = map(analogRead(VoltageSensor),0,1023,0,3.3)*4.565;
 }
 
 // === GPS Functions ===
