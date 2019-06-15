@@ -168,7 +168,6 @@ void setup(){
   packetCount = readInt(EEPROM_ADDR_PACKET_COUNT);
   pinMode(NichromeWire1,OUTPUT);
   pinMode(NichromeWire2,OUTPUT);
-  pinMode(VoltageSensor,INPUT);
 
   analogWrite(NichromeWire1,0);
   analogWrite(NichromeWire2,0);
@@ -461,7 +460,7 @@ void handleTelemetry(){
 void readVoltage(){
   float R2 = 4.6;
   float R1 = 16.4;
-  
+
   float value = analogRead(VoltageSensor);
   float vout = (value * 3.3) / 1024.0;
   voltage = vout / (R2/(R1+R2));

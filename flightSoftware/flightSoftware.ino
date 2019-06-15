@@ -165,7 +165,6 @@ void setup(){
   packetCount = readInt(EEPROM_ADDR_PACKET_COUNT);
   pinMode(NichromeWire1,OUTPUT);
   pinMode(NichromeWire2,OUTPUT);
-  pinMode(VoltageSensor,INPUT);
 
   analogWrite(NichromeWire1,0);
   analogWrite(NichromeWire2,0);
